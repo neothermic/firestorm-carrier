@@ -1,0 +1,35 @@
+Min requirements:
+	
+
+	Frame/chassis
+		
+		The vehicle will likely need a stable chassis which provides a flat platform above the mower base to keep everything clear of 			it. This frame will need to be strong enough to support the weight of the cargo and motors, and also withstand the torque 			stress on the motors.
+
+	Drive motors
+		
+		Currently the design calls for 2x electric motors with chain drives to the rear wheels. We would steer by reversing one motor 			and spinning on the rear axle, or by varying the speed while travelling forward. The front wheels will be castors and simply 			spin and rotate freely.
+
+	Motor controller
+
+		Currently the thinking is that we will use a self built 2 motor H bridge - H bridges have the advantages of eing able to 			drive the motor in both directions, freewheel, or brake the motor if necessary.
+
+	Mower Base
+	
+		Do we leave rotor blade intact?
+	
+	Alternator
+	
+		Technically optional, should we be considering this a minimum requirement due to the inconvenience of charging the vehicle up 			by other means.
+
+
+Features and ideas
+
+Hardware:
+	
+	
+
+
+	
+Software:
+	
+	
