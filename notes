@@ -8,6 +8,7 @@ Min requirements:
 	Drive motors
 		
 		Currently the design calls for 2x electric motors with chain drives to the rear wheels. We would steer by reversing one motor 			and spinning on the rear axle, or by varying the speed while travelling forward. The front wheels will be castors and simply 			spin and rotate freely.
+		Looking like these will cost us £60 if we go with Razor e300 electric scooter motors. 
 
 	Motor controller
 
