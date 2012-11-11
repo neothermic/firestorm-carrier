@@ -20,17 +20,35 @@ Min requirements:
 	
 	Alternator
 	
-		Technically optional, should we be considering this a minimum requirement due to the inconvenience of charging the vehicle up 			by other means.
+		Technically optional, should we be considering this a minimum requirement due to the inconvenience of charging the vehicle up 			by other means. Is it possible to use an electric motor for this, and alternatively use it to start the engine..?
 
 
 Features and ideas
 
 Hardware:
+
+Due to the complexity of the motor driver, it is likely that a PCB will be necessary to prevent insanity. Although this does increase the cost, I don't beleive there is any really viable way around it - the motor drivers are surface mount ICs, and they have complex signal paths. 
+Currently the plan is to have a low current PCB, and to solder wires onto the lower section following the traces for heavier current sections. Any ideas on this that are brighter than mine would be welcome.
+
+While we're at it, we should get any aditional ideas forward onto this PCB before it gets produced, even if they're only afterthoughts - the board will cost the same no matter how much we cram onto it, might aswell make it worth while, and unused components can be easily shorted out.
+
+
 	
 	
 
 
 	
 Software:
-	
-	
+
+
+Self shutdown + one button powerup:
+	Use similar system to the tag board. Program wheels to lock beforehand?
+
+Safety cutout relay
+	Relay held on by microcontroller - 12v systems can only power up when certain conditions are met. Although at first glance there may be no 		need for this, it is simple enough to implement and gives the option of adding additional safety features later.
+
+Emergency stop
+	A little costly, but worth doing? A simple big red button on the back of the vehicle, just in case.
+
+
+
