@@ -5,6 +5,8 @@ Min requirements:
 		
 		The vehicle will likely need a stable chassis which provides a flat platform above the mower base to keep everything clear of 			it. This frame will need to be strong enough to support the weight of the cargo and motors, and also withstand the torque 			stress on the motors.
 
+		Decision made to go with 25mm steel - we've got a request in for an order of 12m of this, and hopefully an opporunity to go 			down there work on it
+
 	Drive motors
 		
 		Currently the design calls for 2x electric motors with chain drives to the rear wheels. We would steer by reversing one motor 			and spinning on the rear axle, or by varying the speed while travelling forward. The front wheels will be castors and simply 			spin and rotate freely.

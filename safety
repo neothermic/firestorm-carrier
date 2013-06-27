@@ -1,0 +1,21 @@
+New file for safety concerns and systems
+
+The device will be reasonably heavy and if it moves at the speeds we intend it to, it needs to be clever enough not to run over and blend anyone it comes across.
+
+
+Software speed limiter
+
+Geofencing
+	Would depend on accuracy and cost of GPS. Would need resetting for each new location.
+	Don't think the machine 'escaping' is the biggest issue.
+
+Emergency Stop Button
+	Costly but could be worthwhile. Easy enough to implement.
+
+Impact detection
+	
+
+Kill switch tether
+	
+Radio kill switch
+	An inexpensive radio transmitter which reliably changes state when signal is lost or intermittent could be a good way of disabling 		the machine quickly if the main control transmitter fails for any reason.
