@@ -19,3 +19,5 @@ Kill switch tether
 	
 Radio kill switch
 	An inexpensive radio transmitter which reliably changes state when signal is lost or intermittent could be a good way of disabling 		the machine quickly if the main control transmitter fails for any reason.
+
+	The internet suggests that some Spektrum RC receivers include a failsafe feature which would essentially solve all our problems by automagically switching output to a predefined state in the event of signal loss
