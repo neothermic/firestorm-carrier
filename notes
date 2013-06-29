@@ -34,6 +34,21 @@ Currently the plan is to have a low current PCB, and to solder wires onto the lo
 
 While we're at it, we should get any aditional ideas forward onto this PCB before it gets produced, even if they're only afterthoughts - the board will cost the same no matter how much we cram onto it, might aswell make it worth while, and unused components can be easily shorted out.
 
+Modules!
+	Mule: A simple wheelbarrow like attachment mounted on top of the main deck for transporting tools, rubbish, camping gear, water etc.
+
+	Umbrella: By adding a semi-permanent upright tube, a parasol/pub umbrella can be added to act as a mobile shelter from the rain or 		sun.
+
+	Jenny (The generator): Adding an inverter will allow us to power 230v stuff on the move, and combined with the alternators will 	effectively turn the rig into a mobile generator.
+
+	Winston (The server): A most likely RPi based server would allow easy access and control of the various modules and on board systems. 		In future this could include a mobile media server, and be engineered to work in tandem with the other computer based modules and PA.
+
+	Chatterbox: A wireless router - whether this is broadcast by the onboard server as an adapter, or as a separate device, this would 		allow a mobile network to be setup, for whatever purpose. Examples include a mobile wifi hotspot, or a base station for phone based 		communications.
+
+	PA: What it sounds like. A simple mixer, microphone and speakers (powered or with amp). Powered either from the inverter or directly 		somehow. Could take an output from Winston to play music from the server, or possibly act as an airplay speaker.
+
+	
+
 
 	
 	
@@ -51,6 +66,8 @@ Safety cutout relay
 
 Emergency stop
 	A little costly, but worth doing? A simple big red button on the back of the vehicle, just in case.
+
+Control: A web GUI might serve as a simple way to turn on and off various lights and features?
 
 
 
