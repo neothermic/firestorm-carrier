@@ -42,8 +42,8 @@ void loop()
   byte yVal = normalise(yDuration, yLow, yHigh);
 
   //convert from a 2d mode into tank tracks.
-  byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient / abs(yVal - 127))) + 127);
-  byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient / abs(yVal - 127))) + 127);
+  byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
+  byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
 
   Serial.print(xVal, DEC);
   Serial.print(", ");
