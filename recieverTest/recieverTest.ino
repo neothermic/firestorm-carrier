@@ -1,12 +1,19 @@
 //pins for the PWM(?) input from the radio reciever.
 int xAxis = 8;
 int yAxis = 7;
+int throttle = 12;
+
+int leftPinOut = 11;
+int rightPinOut = 10;
+
+int powerPin = 9;
 
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
-unsigned long xLow = 1100;
-unsigned long xHigh = 1860;
+unsigned long xLow = 1220;
+unsigned long xHigh = 1790;
 unsigned long yLow = 1100;
-unsigned long yHigh = 1890;
+unsigned long yHigh = 1680;
+
 
 /*
  * How much does steering affect the tank tracks, particularly at speed. 
@@ -25,11 +32,25 @@ byte scaling = 255;
 
 unsigned long xDuration;
 unsigned long yDuration;
+unsigned long throttleDuration = 1000;
 
 void setup()
 {
   pinMode(xAxis, INPUT);
   pinMode(yAxis, INPUT);
+  
+  pinMode(leftPinOut, OUTPUT);
+  pinMode(rightPinOut, OUTPUT);
+  
+  analogWrite(leftPinOut, 127);
+  analogWrite(rightPinOut, 127);
+  
+  pinMode(throttle, INPUT);
+  
+  pinMode(powerPin, OUTPUT);
+  digitalWrite(powerPin, HIGH);
+delay(1000);
+  digitalWrite(powerPin, LOW);
   Serial.begin(9600);
 }
 
@@ -37,13 +58,22 @@ void loop()
 {
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
+  throttleDuration = pulseIn(throttle, HIGH, 1000000);
   
+  if (throttleDuration > 1200) {
+    
   byte xVal = normalise(xDuration, xLow, xHigh);
   byte yVal = normalise(yDuration, yLow, yHigh);
 
   //convert from a 2d mode into tank tracks.
   byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
   byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
+
+  Serial.print(xDuration, DEC);
+  Serial.print(", ");
+  Serial.print(yDuration, DEC);
+  
+  Serial.print(" => ");  
 
   Serial.print(xVal, DEC);
   Serial.print(", ");
@@ -56,6 +86,13 @@ void loop()
   Serial.print(rightTank, DEC);
   
   Serial.println("");
+  
+  analogWrite(leftPinOut, leftTank);
+  analogWrite(rightPinOut, rightTank);
+  } else {
+    analogWrite(leftPinOut, 127);
+    analogWrite(rightPinOut, 127);
+  }
 }
 
 byte normalise(unsigned long val, unsigned long low, unsigned long high) {
