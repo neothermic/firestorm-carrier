@@ -7,6 +7,7 @@ int leftPinOut = 11;
 int rightPinOut = 10;
 
 int powerPin = 9;
+int selfPowerPin = 6;
 
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
@@ -42,12 +43,13 @@ void setup()
   pinMode(leftPinOut, OUTPUT);
   pinMode(rightPinOut, OUTPUT);
   
-  analogWrite(leftPinOut, 127);
-  analogWrite(rightPinOut, 127);
+
   
   pinMode(throttle, INPUT);
   
   pinMode(powerPin, OUTPUT);
+  pinMode(selfPowerPin, OUTPUT);
+  digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
 delay(1000);
   digitalWrite(powerPin, LOW);
@@ -60,7 +62,7 @@ void loop()
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
   
-  if (throttleDuration > 1200) {
+ 
     
   byte xVal = normalise(xDuration, xLow, xHigh);
   byte yVal = normalise(yDuration, yLow, yHigh);
@@ -68,6 +70,14 @@ void loop()
   //convert from a 2d mode into tank tracks.
   byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
   byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
+
+int leftPulse = map(leftTank, 0, 255, 1000, 2000);
+int rightPulse = map(rightTank, 0, 255, 1000, 2000);
+
+if (throttleDuration < 1200) {
+  leftPulse = 1500;
+  rightPulse = 1500;
+} 
 
   Serial.print(xDuration, DEC);
   Serial.print(", ");
@@ -81,18 +91,19 @@ void loop()
   
   Serial.print(" => ");  
 
-  Serial.print(leftTank, DEC);
+  Serial.print(leftPulse, DEC);
   Serial.print(", ");
-  Serial.print(rightTank, DEC);
+  Serial.print(rightPulse, DEC);
   
   Serial.println("");
   
-  analogWrite(leftPinOut, leftTank);
-  analogWrite(rightPinOut, rightTank);
-  } else {
-    analogWrite(leftPinOut, 127);
-    analogWrite(rightPinOut, 127);
-  }
+  digitalWrite(leftPinOut, HIGH);
+  delayMicroseconds(leftPulse);
+  digitalWrite(leftPinOut, LOW);
+  digitalWrite(rightPinOut, HIGH);
+  delayMicroseconds(rightPulse);
+  digitalWrite(rightPinOut, LOW);
+    
 }
 
 byte normalise(unsigned long val, unsigned long low, unsigned long high) {
