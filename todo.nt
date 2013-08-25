@@ -1,5 +1,7 @@
 
-Confirm design wih Andys
-Confirm decision on motor controller
+
 Decide on paint job
+Add deadzone
+Tweak numbers/autocalibrate?
+Expose logical output for RC switch (channel 5/AUX switch)
 

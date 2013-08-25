@@ -24,4 +24,4 @@ Kill switch tether
 Radio kill switch
 	An inexpensive radio transmitter which reliably changes state when signal is lost or intermittent could be a good way of disabling 		the machine quickly if the main control transmitter fails for any reason.
 
-	The internet suggests that some Spektrum RC receivers include a failsafe feature which would essentially solve all our problems by 		automagically switching output to a predefined state in the event of signal loss. This unfortunately seems to be a feature of 		Spektrum receivers, and ours does -not- have it. We either need to buy a new transmitter/receiver pair (more expensive) or go with 		the alternative idea above.
+	The internet suggests that some Spektrum RC receivers include a failsafe feature which would essentially solve all our problems by 		automagically switching output to a predefined state in the event of signal loss. Got a spektrum receiver. This feature has been implemented. Currently the vehicle stops when no signal is present.

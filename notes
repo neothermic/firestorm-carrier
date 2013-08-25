@@ -59,13 +59,13 @@ Software:
 
 
 Self shutdown + one button powerup:
-	Use similar system to the tag board. Program wheels to lock beforehand?
+	Use similar system to the tag board. Program wheels to lock beforehand - Done, keyswitch powerup allows removal of activation key so prevent "unauthorized" restart.
 
 Safety cutout relay
-	Relay held on by microcontroller - 12v systems can only power up when certain conditions are met. Although at first glance there may be no 		need for this, it is simple enough to implement and gives the option of adding additional safety features later.
+	Relay held on by microcontroller - 24v systems can only power up when certain conditions are met. Although at first glance there may be no 		need for this, it is simple enough to implement and gives the option of adding additional safety features later
 
 Emergency stop
-	A little costly, but worth doing? A simple big red button on the back of the vehicle, just in case.
+	A little costly, but worth doing? A simple big red button on the back of the vehicle, just in case. - Done, ESTOP cuts power to main solenoid and processors, killing the machine instantly.
 
 Control: A web GUI might serve as a simple way to turn on and off various lights and features?
 
