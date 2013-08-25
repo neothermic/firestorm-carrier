@@ -1,3 +1,7 @@
+#include <Servo.h>
+
+Servo left;
+Servo right;
 //pins for the PWM(?) input from the radio reciever.
 int xAxis = 8;
 int yAxis = 7;
@@ -37,11 +41,12 @@ unsigned long throttleDuration = 1000;
 
 void setup()
 {
+  
   pinMode(xAxis, INPUT);
   pinMode(yAxis, INPUT);
   
-  pinMode(leftPinOut, OUTPUT);
-  pinMode(rightPinOut, OUTPUT);
+left.attach(leftPinOut, 1000, 2000);
+right.attach(rightPinOut, 1000, 2000);
   
 
   
@@ -71,12 +76,12 @@ void loop()
   byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
   byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
 
-int leftPulse = map(leftTank, 0, 255, 1000, 2000);
-int rightPulse = map(rightTank, 0, 255, 1000, 2000);
+int leftServo = map(leftTank, 0, 255, 0, 180);
+int rightServo = map(rightTank, 0, 255, 0, 180);
 
 if (throttleDuration < 1200) {
-  leftPulse = 1500;
-  rightPulse = 1500;
+  leftServo = 90;
+  rightServo = 90;
 } 
 
   Serial.print(xDuration, DEC);
@@ -91,18 +96,14 @@ if (throttleDuration < 1200) {
   
   Serial.print(" => ");  
 
-  Serial.print(leftPulse, DEC);
+  Serial.print(leftServo, DEC);
   Serial.print(", ");
-  Serial.print(rightPulse, DEC);
+  Serial.print(rightServo, DEC);
   
   Serial.println("");
   
-  digitalWrite(leftPinOut, HIGH);
-  delayMicroseconds(leftPulse);
-  digitalWrite(leftPinOut, LOW);
-  digitalWrite(rightPinOut, HIGH);
-  delayMicroseconds(rightPulse);
-  digitalWrite(rightPinOut, LOW);
+left.write(leftServo);
+right.write(rightServo);
     
 }
 
