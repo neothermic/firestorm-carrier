@@ -7,8 +7,8 @@ int xAxis = 8;
 int yAxis = 7;
 int throttle = 12;
 
-int leftPinOut = 11;
-int rightPinOut = 10;
+int leftPinOut = 10;
+int rightPinOut = 11;
 
 int powerPin = 9;
 int selfPowerPin = 6;
@@ -47,6 +47,9 @@ void setup()
   
 left.attach(leftPinOut, 1000, 2000);
 right.attach(rightPinOut, 1000, 2000);
+
+left.write(90);
+right.write(90);
   
 
   
@@ -66,7 +69,19 @@ void loop()
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
-  
+//Autocalibrate - Checks to see if read pulses are outside our current stick ranges and adjusts them accordingly 
+  if (xDuration < xLow){
+    xlow = xDuration;
+  }
+  if (xDuration > xHigh){
+   xHigh = xDuration;
+  }
+  if (yDuration < yLow){
+    yLow = yDuration;
+   }
+  if (yDuration > yHigh){
+    yHigh = yDuration;
+  }
  
     
   byte xVal = normalise(xDuration, xLow, xHigh);
