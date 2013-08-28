@@ -13,7 +13,7 @@ int rightPinOut = 11;
 int powerPin = 9;
 int selfPowerPin = 6;
 
-//baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
+//baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be. Note - Autocalibrate will only extend these values if they are incorrect. While this may result in erratic behaviour at first, it may now be better to make these values closer together than they need to be?
 unsigned long xLow = 1220;
 unsigned long xHigh = 1790;
 unsigned long yLow = 1100;
