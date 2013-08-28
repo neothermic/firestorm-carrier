@@ -19,6 +19,10 @@ unsigned long xHigh = 1790;
 unsigned long yLow = 1100;
 unsigned long yHigh = 1680;
 
+//Threshold for positive output. This is the number of positions either side of center to be ignored and the vehicle will stay in neutral (90,90). Make this bigger to create a larger deadzone if the vehicle twitches when sticks are centered.
+
+unsigned long deadzone = 0;
+
 
 /*
  * How much does steering affect the tank tracks, particularly at speed. 
@@ -63,6 +67,10 @@ delay(1000);
 
 void loop()
 {
+  //Reset locks for next cycle - These values only affect debug output
+  int failsafeLocked = 0;
+  int deadzoneLocked = 0;  
+
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
@@ -82,8 +90,9 @@ int rightServo = map(rightTank, 0, 255, 0, 180);
 if (throttleDuration < 1200) {
   leftServo = 90;
   rightServo = 90;
+  failsafeLocked = 1;
 } 
-
+  
   Serial.print(xDuration, DEC);
   Serial.print(", ");
   Serial.print(yDuration, DEC);
@@ -99,6 +108,14 @@ if (throttleDuration < 1200) {
   Serial.print(leftServo, DEC);
   Serial.print(", ");
   Serial.print(rightServo, DEC);
+  if (deadzoneLocked = 1){
+    Serial.print(", ");
+    Serial.print("Deadzone");
+  }
+  if (failsafeLocked = 1){
+    Serial.print(", ");
+    Serial.print("Failsafe");
+  }
   
   Serial.println("");
   
