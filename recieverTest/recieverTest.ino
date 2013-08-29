@@ -60,7 +60,7 @@ right.attach(rightPinOut, 1000, 2000);
   pinMode(selfPowerPin, OUTPUT);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
-delay(1000);
+  delay(1000);
   digitalWrite(powerPin, LOW);
   Serial.begin(9600);
 }
@@ -69,11 +69,23 @@ void loop()
 {
   //Reset locks for next cycle - These values only affect debug output
   int failsafeLocked = 0;
-  int deadzoneLocked = 0;  
+  int xLocked = 0;  
+  int yLocked = 0;
 
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
+
+  unsigned long xCentre = (xLow + xHigh)/2;
+  if (xDuration <= (xCentre - deadzone) || xDuration >= (xCentre + deadzone)){
+    xLocked = 1;
+    xDuration = xCentre;
+  }
+  unsigned long yCentre = (yLow + yHigh)/2;
+  if (yDuration <= (yCentre - deadzone) || yDuration >= (yCentre + deadzone)){
+    yLocked = 1;
+    yDuration = yCentre;
+  }
   
  
     
@@ -92,6 +104,7 @@ if (throttleDuration < 1200) {
   rightServo = 90;
   failsafeLocked = 1;
 } 
+
   
   Serial.print(xDuration, DEC);
   Serial.print(", ");
@@ -108,7 +121,7 @@ if (throttleDuration < 1200) {
   Serial.print(leftServo, DEC);
   Serial.print(", ");
   Serial.print(rightServo, DEC);
-  if (deadzoneLocked = 1){
+  if (xLocked = 1 || yLocked = 1){
     Serial.print(", ");
     Serial.print("Deadzone");
   }
