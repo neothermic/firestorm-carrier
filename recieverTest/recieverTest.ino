@@ -6,12 +6,15 @@ Servo right;
 int xAxis = 8;
 int yAxis = 7;
 int throttle = 12;
+int switchPin = 4;
 
 int leftPinOut = 11;
 int rightPinOut = 10;
 
 int powerPin = 9;
 int selfPowerPin = 6;
+
+int inverterPin = 13;
 
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
@@ -38,6 +41,7 @@ byte scaling = 255;
 unsigned long xDuration;
 unsigned long yDuration;
 unsigned long throttleDuration = 1000;
+unsigned long switchDuration = 1000;
 
 void setup()
 {
@@ -51,9 +55,11 @@ right.attach(rightPinOut, 1000, 2000);
 
   
   pinMode(throttle, INPUT);
+  pinMode(switchPin, INPUT);
   
   pinMode(powerPin, OUTPUT);
   pinMode(selfPowerPin, OUTPUT);
+  pinMode(inverterPin, OUTPUT);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
 delay(1000);
@@ -66,6 +72,7 @@ void loop()
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
+  switchDuration = pulseIn(switchPin, HIGH, 1000000);
   
  
     
@@ -83,6 +90,11 @@ if (throttleDuration < 1200) {
   leftServo = 90;
   rightServo = 90;
 } 
+if (switchDuration > 1200){
+  digitalWrite(inverterPin, LOW);
+} else {
+  digitalWrite(inverterPin, HIGH);
+}
 
   Serial.print(xDuration, DEC);
   Serial.print(", ");
