@@ -121,7 +121,11 @@ if (throttleDuration < 1200) {
   Serial.print(leftServo, DEC);
   Serial.print(", ");
   Serial.print(rightServo, DEC);
-  if (xLocked = 1 || yLocked = 1){
+  if (xLocked = 1){
+    Serial.print(", ");
+    Serial.print("Deadzone");
+  }
+  if (yLocked = 1){
     Serial.print(", ");
     Serial.print("Deadzone");
   }
