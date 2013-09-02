@@ -77,12 +77,12 @@ void loop()
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
 
   unsigned long xCentre = (xLow + xHigh)/2;
-  if (xDuration <= (xCentre - deadzone) || xDuration >= (xCentre + deadzone)){
+  if (xDuration <= (xCentre + deadzone) && xDuration >= (xCentre - deadzone)){
     xLocked = 1;
     xDuration = xCentre;
   }
   unsigned long yCentre = (yLow + yHigh)/2;
-  if (yDuration <= (yCentre - deadzone) || yDuration >= (yCentre + deadzone)){
+  if (yDuration <= (yCentre + deadzone) && yDuration >= (yCentre - deadzone)){
     yLocked = 1;
     yDuration = yCentre;
   }
@@ -121,15 +121,15 @@ if (throttleDuration < 1200) {
   Serial.print(leftServo, DEC);
   Serial.print(", ");
   Serial.print(rightServo, DEC);
-  if (xLocked = 1){
+  if (xLocked == 1){
     Serial.print(", ");
     Serial.print("Deadzone");
   }
-  if (yLocked = 1){
+  if (yLocked == 1){
     Serial.print(", ");
     Serial.print("Deadzone");
   }
-  if (failsafeLocked = 1){
+  if (failsafeLocked == 1){
     Serial.print(", ");
     Serial.print("Failsafe");
   }
