@@ -19,9 +19,9 @@ unsigned long xHigh = 1790;
 unsigned long yLow = 1100;
 unsigned long yHigh = 1680;
 
-//Threshold for positive output. This is the number of positions either side of center to be ignored and the vehicle will stay in neutral (90,90). Make this bigger to create a larger deadzone if the vehicle twitches when sticks are centered.
+//Threshold for positive output. This is the number of positions either side of center to be ignored and the vehicle will stay in neutral (90,90). Make this bigger to create a larger deadzone if the vehicle twitches when sticks are centered. 50 Seems a good place to start
 
-unsigned long deadzone = 0;
+unsigned long deadzone = 50;
 
 
 /*
