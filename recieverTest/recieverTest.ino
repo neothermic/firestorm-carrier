@@ -14,7 +14,7 @@ int rightPinOut = 10;
 int powerPin = 9;
 int selfPowerPin = 6;
 
-int inverterPin = 13;
+int inverterPin = 5;
 
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
