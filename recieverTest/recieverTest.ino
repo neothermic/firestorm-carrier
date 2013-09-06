@@ -19,7 +19,7 @@ unsigned long xHigh = 1790;
 unsigned long yLow = 1100;
 unsigned long yHigh = 1680;
 
-//Threshold for positive output. This is the number of positions either side of center to be ignored and the vehicle will stay in neutral (90,90). Make this bigger to create a larger deadzone if the vehicle twitches when sticks are centered. 50 Seems a good place to start
+//Threshold for positive output. This is the number of positions either side of center to be ignored and the vehicle will stay in neutral (90,90). Make this bigger to create a larger deadzone if the vehicle twitches when sticks are centered. 50 Seems a good place to start. Note that the larger this is, the more of the extremes of each stick will be lost.
 
 unsigned long deadzone = 50;
 
@@ -75,16 +75,24 @@ void loop()
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
-
+//check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
   unsigned long xCentre = (xLow + xHigh)/2;
   if (xDuration <= (xCentre + deadzone) && xDuration >= (xCentre - deadzone)){
     xLocked = 1;
     xDuration = xCentre;
+  } else if (xDuration >= xCentre) {
+    xDuration = (xDuration - deadzone);
+  } else if (xDuration < xCentre) {
+    xDuration = (xDuration + deadzone);
   }
   unsigned long yCentre = (yLow + yHigh)/2;
   if (yDuration <= (yCentre + deadzone) && yDuration >= (yCentre - deadzone)){
     yLocked = 1;
     yDuration = yCentre;
+  } else if (yDuration >= yCentre) {
+    yDuration = (yDuration - deadzone);
+  } else if (yDuration < yCentre) {
+    yDuration = (yDuration + deadzone);
   }
   
  
