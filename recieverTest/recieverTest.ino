@@ -10,6 +10,7 @@ int switchPin = 4;
 
 int leftPinOut = 11;
 int rightPinOut = 10;
+int brakePin = 13; //change this!
 
 int powerPin = 9;
 int selfPowerPin = 6;
@@ -56,6 +57,9 @@ right.attach(rightPinOut, 1000, 2000);
   
   pinMode(throttle, INPUT);
   pinMode(switchPin, INPUT);
+
+  pinMode(brakePin, OUTPUT);
+  brakeOff();
   
   pinMode(powerPin, OUTPUT);
   pinMode(selfPowerPin, OUTPUT);
@@ -129,4 +133,13 @@ byte normalise(unsigned long val, unsigned long low, unsigned long high) {
 // take a signed int value which should be //about// 0-255, peg it to exactly 0-255 and convert to a byte.
 byte pegToByte(int input) {
   return max(min(input, 255), 0);
+}
+
+//routines to avoid confusion with the brakes and the relay being backwards
+void brakeOn() {
+  digitalWrite(brakePin, HIGH);
+}
+
+void brakeOff() {
+  digitalWrite(brakePin, LOW);
 }
