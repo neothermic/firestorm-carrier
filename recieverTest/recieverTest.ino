@@ -10,7 +10,7 @@ int switchPin = 4;
 
 int leftPinOut = 11;
 int rightPinOut = 10;
-int brakePin = 13; //change this!
+int brakePin = 3; //One pin controls both electronic brakes
 
 int powerPin = 9;
 int selfPowerPin = 6;
