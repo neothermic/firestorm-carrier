@@ -131,7 +131,7 @@ if (switchDuration > 1200){
  // digitalWrite(inverterPin, HIGH);
 }
 
-  
+/*  
   Serial.print(xDuration, DEC);
   Serial.print(", ");
   Serial.print(yDuration, DEC);
@@ -161,7 +161,7 @@ if (switchDuration > 1200){
   }
   
   Serial.println("");
-  
+  */
 left.write(leftServo);
 right.write(rightServo);
     checkSerial();
@@ -205,6 +205,11 @@ void inverterToggle() {
     Serial.println("Inverter OFF");
   }
 }
+
+void allStop(); {
+  digitalWrite(powerPin, HIGH);
+  digitalWrite(selfPowerPin, HIGH);
+}
   
 //check for serial input and act accordingly
 void checkSerial() {
@@ -222,6 +227,9 @@ void checkSerial() {
           break;
         case 'i':
           inverterToggle();
+          break;
+        case 'S':
+          allStop();
           break;
       }
     }
