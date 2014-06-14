@@ -6,12 +6,16 @@ Servo right;
 int xAxis = 8;
 int yAxis = 7;
 int throttle = 12;
+int switchPin = 4;
 
 int leftPinOut = 11;
 int rightPinOut = 10;
+int brakePin = 3; //One pin controls both electronic brakes
 
 int powerPin = 9;
 int selfPowerPin = 6;
+
+int inverterPin = 5;
 
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
@@ -42,6 +46,7 @@ byte scaling = 255;
 unsigned long xDuration;
 unsigned long yDuration;
 unsigned long throttleDuration = 1000;
+unsigned long switchDuration = 1000;
 
 void setup()
 {
@@ -55,9 +60,14 @@ right.attach(rightPinOut, 1000, 2000);
 
   
   pinMode(throttle, INPUT);
+  pinMode(switchPin, INPUT);
+
+  pinMode(brakePin, OUTPUT);
+  brakeOff();
   
   pinMode(powerPin, OUTPUT);
   pinMode(selfPowerPin, OUTPUT);
+  pinMode(inverterPin, OUTPUT);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
   delay(1000);
@@ -75,6 +85,7 @@ void loop()
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
+
 //check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
   unsigned long xCentre = (xLow + xHigh)/2;
   if (xDuration <= (xCentre + deadzone) && xDuration >= (xCentre - deadzone)){
@@ -94,9 +105,9 @@ void loop()
   } else if (yDuration < yCentre) {
     yDuration = (yDuration + deadzone);
   }
-  
- 
-    
+
+  switchDuration = pulseIn(switchPin, HIGH, 1000000);
+
   byte xVal = normalise(xDuration, xLow, xHigh);
   byte yVal = normalise(yDuration, yLow, yHigh);
 
@@ -112,6 +123,11 @@ if (throttleDuration < 1200) {
   rightServo = 90;
   failsafeLocked = 1;
 } 
+if (switchDuration > 1200){
+  digitalWrite(inverterPin, LOW);
+} else {
+  digitalWrite(inverterPin, HIGH);
+}
 
   
   Serial.print(xDuration, DEC);
@@ -159,4 +175,13 @@ byte normalise(unsigned long val, unsigned long low, unsigned long high) {
 // take a signed int value which should be //about// 0-255, peg it to exactly 0-255 and convert to a byte.
 byte pegToByte(int input) {
   return max(min(input, 255), 0);
+}
+
+//routines to avoid confusion with the brakes and the relay being backwards
+void brakeOn() {
+  digitalWrite(brakePin, HIGH);
+}
+
+void brakeOff() {
+  digitalWrite(brakePin, LOW);
 }
