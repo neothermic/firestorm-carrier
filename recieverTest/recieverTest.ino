@@ -23,6 +23,10 @@ unsigned long xHigh = 1790;
 unsigned long yLow = 1100;
 unsigned long yHigh = 1680;
 
+//Threshold for positive output. This is the number of positions either side of center to be ignored and the vehicle will stay in neutral (90,90). Make this bigger to create a larger deadzone if the vehicle twitches when sticks are centered. 50 Seems a good place to start. Note that the larger this is, the more of the extremes of each stick will be lost.
+
+unsigned long deadzone = 50;
+
 
 /*
  * How much does steering affect the tank tracks, particularly at speed. 
@@ -66,20 +70,44 @@ right.attach(rightPinOut, 1000, 2000);
   pinMode(inverterPin, OUTPUT);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
-delay(1000);
+  delay(1000);
   digitalWrite(powerPin, LOW);
   Serial.begin(9600);
 }
 
 void loop()
 {
+  //Reset locks for next cycle - These values only affect debug output
+  int failsafeLocked = 0;
+  int xLocked = 0;  
+  int yLocked = 0;
+
   xDuration = pulseIn(xAxis, HIGH, 1000000);
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
+
+//check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
+  unsigned long xCentre = (xLow + xHigh)/2;
+  if (xDuration <= (xCentre + deadzone) && xDuration >= (xCentre - deadzone)){
+    xLocked = 1;
+    xDuration = xCentre;
+  } else if (xDuration >= xCentre) {
+    xDuration = (xDuration - deadzone);
+  } else if (xDuration < xCentre) {
+    xDuration = (xDuration + deadzone);
+  }
+  unsigned long yCentre = (yLow + yHigh)/2;
+  if (yDuration <= (yCentre + deadzone) && yDuration >= (yCentre - deadzone)){
+    yLocked = 1;
+    yDuration = yCentre;
+  } else if (yDuration >= yCentre) {
+    yDuration = (yDuration - deadzone);
+  } else if (yDuration < yCentre) {
+    yDuration = (yDuration + deadzone);
+  }
+
   switchDuration = pulseIn(switchPin, HIGH, 1000000);
-  
- 
-    
+
   byte xVal = normalise(xDuration, xLow, xHigh);
   byte yVal = normalise(yDuration, yLow, yHigh);
 
@@ -93,6 +121,7 @@ int rightServo = map(rightTank, 0, 255, 0, 180);
 if (throttleDuration < 1200) {
   leftServo = 90;
   rightServo = 90;
+  failsafeLocked = 1;
 } 
 if (switchDuration > 1200){
   digitalWrite(inverterPin, LOW);
@@ -100,6 +129,7 @@ if (switchDuration > 1200){
   digitalWrite(inverterPin, HIGH);
 }
 
+  
   Serial.print(xDuration, DEC);
   Serial.print(", ");
   Serial.print(yDuration, DEC);
@@ -115,6 +145,18 @@ if (switchDuration > 1200){
   Serial.print(leftServo, DEC);
   Serial.print(", ");
   Serial.print(rightServo, DEC);
+  if (xLocked == 1){
+    Serial.print(", ");
+    Serial.print("X Deadzone");
+  }
+  if (yLocked == 1){
+    Serial.print(", ");
+    Serial.print("Y Deadzone");
+  }
+  if (failsafeLocked == 1){
+    Serial.print(", ");
+    Serial.print("Failsafe");
+  }
   
   Serial.println("");
   
