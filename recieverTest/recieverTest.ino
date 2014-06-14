@@ -191,24 +191,30 @@ void brakeOff() {
 void batteryCheck() {
   int senseVoltage = analogRead(HvPin);
   float voltage = senseVoltage * (31.786 / 1023.0);
-  Serial.println(voltage);
+  Serial.print("B");
+  Serial.print(voltage);
+  Serial.println("");
 }
 
 void inverterToggle() {
   if (inverterState == 0){
     digitalWrite(inverterPin, LOW);
     inverterState = 1;
-    Serial.println("Inverter ON");
+    Serial.print("D Inverter ON");
+    Serial.println("");
   } else if (inverterState == 1){
     digitalWrite(inverterPin, HIGH);
     inverterState = 0;
-    Serial.println("Inverter OFF");
+    Serial.print("D Inverter OFF");
+    Serial.println("");
   }
 }
 
 void allStop() {
   digitalWrite(powerPin, HIGH);
   digitalWrite(selfPowerPin, HIGH);
+  Serial.print("D ALL STOP");
+  Serial.println("");
 }
   
 //check for serial input and act accordingly
