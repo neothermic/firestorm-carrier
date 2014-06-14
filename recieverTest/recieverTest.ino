@@ -1,5 +1,5 @@
 #include <Servo.h>
-
+char serialBuffer[64];
 Servo left;
 Servo right;
 //pins for the PWM(?) input from the radio reciever.
@@ -16,7 +16,7 @@ int powerPin = 9;
 int selfPowerPin = 6;
 
 int inverterPin = 5;
-
+int HvPin = A0;
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
 unsigned long xHigh = 1790;
@@ -47,6 +47,8 @@ unsigned long xDuration;
 unsigned long yDuration;
 unsigned long throttleDuration = 1000;
 unsigned long switchDuration = 1000;
+
+unsigned long inverterState = 0;
 
 void setup()
 {
@@ -124,9 +126,9 @@ if (throttleDuration < 1200) {
   failsafeLocked = 1;
 } 
 if (switchDuration > 1200){
-  digitalWrite(inverterPin, LOW);
+ // digitalWrite(inverterPin, LOW);
 } else {
-  digitalWrite(inverterPin, HIGH);
+ // digitalWrite(inverterPin, HIGH);
 }
 
   
@@ -162,7 +164,7 @@ if (switchDuration > 1200){
   
 left.write(leftServo);
 right.write(rightServo);
-    
+    checkSerial();
 }
 
 byte normalise(unsigned long val, unsigned long low, unsigned long high) {
@@ -184,4 +186,44 @@ void brakeOn() {
 
 void brakeOff() {
   digitalWrite(brakePin, LOW);
+}
+
+void batteryCheck() {
+  int senseVoltage = analogRead(HvPin);
+  float voltage = senseVoltage * (31.786 / 1023.0);
+  Serial.println(voltage);
+}
+
+void inverterToggle() {
+  if (inverterState == 0){
+    digitalWrite(inverterPin, LOW);
+    inverterState = 1;
+    Serial.println("Inverter ON");
+  } else if (inverterState == 1){
+    digitalWrite(inverterPin, HIGH);
+    inverterState = 0;
+    Serial.println("Inverter OFF");
+  }
+}
+  
+//check for serial input and act accordingly
+void checkSerial() {
+  if (Serial.available() > 0) {
+    byte bytesRead = Serial.readBytesUntil('\n', serialBuffer, 64);
+
+    if (bytesRead == 0) {
+      //too little to be interesting
+    }
+    else if (bytesRead == 1) {
+      //single character, probably a debugging command
+      switch (serialBuffer[0]) {
+        case 'b':
+          batteryCheck();
+          break;
+        case 'i':
+          inverterToggle();
+          break;
+      }
+    }
+  }
 }
