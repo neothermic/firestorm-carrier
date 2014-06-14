@@ -206,7 +206,7 @@ void inverterToggle() {
   }
 }
 
-void allStop(); {
+void allStop() {
   digitalWrite(powerPin, HIGH);
   digitalWrite(selfPowerPin, HIGH);
 }
