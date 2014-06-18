@@ -43,6 +43,9 @@ class Control:
     return retval
 
   def sendAllStop(self):
+    if DEBUG:
+      print "ALL STOP CALLED"
+      return
     self.serialLock.acquire()
     self.serial.write("S\n")
     #We should be about to loose power but FWIW we will return!
