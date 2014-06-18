@@ -60,7 +60,8 @@ void setup()
   left.attach(leftPinOut, 1000, 2000);
   right.attach(rightPinOut, 1000, 2000);
 
-  pinMode(throttle, INPUT);  pinMode(switchPin, INPUT);
+  pinMode(throttle, INPUT);
+  pinMode(switchPin, INPUT);
 
   pinMode(brakePin, OUTPUT);
   brakeOff();
