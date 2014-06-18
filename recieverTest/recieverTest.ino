@@ -57,13 +57,10 @@ void setup()
   pinMode(xAxis, INPUT);
   pinMode(yAxis, INPUT);
   
-left.attach(leftPinOut, 1000, 2000);
-right.attach(rightPinOut, 1000, 2000);
-  
+  left.attach(leftPinOut, 1000, 2000);
+  right.attach(rightPinOut, 1000, 2000);
 
-  
-  pinMode(throttle, INPUT);
-  pinMode(switchPin, INPUT);
+  pinMode(throttle, INPUT);  pinMode(switchPin, INPUT);
 
   pinMode(brakePin, OUTPUT);
   brakeOff();
@@ -89,7 +86,7 @@ void loop()
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
 
-//check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
+  //check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
   unsigned long xCentre = (xLow + xHigh)/2;
   if (xDuration <= (xCentre + deadzone) && xDuration >= (xCentre - deadzone)){
     xLocked = 1;
@@ -99,6 +96,7 @@ void loop()
   } else if (xDuration < xCentre) {
     xDuration = (xDuration + deadzone);
   }
+
   unsigned long yCentre = (yLow + yHigh)/2;
   if (yDuration <= (yCentre + deadzone) && yDuration >= (yCentre - deadzone)){
     yLocked = 1;
@@ -118,20 +116,21 @@ void loop()
   byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient1 / (abs(yVal - 127) + steeringCoefficient2))) + 127);
   byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient1 / (abs(yVal - 127) + steeringCoefficient2))) + 127);
 
-int leftServo = map(leftTank, 0, 255, 0, 180);
-int rightServo = map(rightTank, 0, 255, 0, 180);
+  //servo library needs a value between 0 and 180
+  int leftServo = map(leftTank, 0, 255, 0, 180);
+  int rightServo = map(rightTank, 0, 255, 0, 180);
 
-if (throttleDuration < 1200) {
-  leftServo = 90;
-  rightServo = 90;
-  failsafeLocked = 1;
-} 
-if (switchDuration > 1200){
-  digitalWrite(inverterPin, LOW);
-} else {
-  digitalWrite(inverterPin, HIGH);
-}
+  if (throttleDuration < 1200) {
+    leftServo = 90;
+    rightServo = 90;
+    failsafeLocked = 1;
+  } 
 
+  if (switchDuration > 1200){
+    digitalWrite(inverterPin, LOW);
+  } else {
+    digitalWrite(inverterPin, HIGH);
+  }
   
   Serial.print(xDuration, DEC);
   Serial.print(", ");
@@ -163,9 +162,8 @@ if (switchDuration > 1200){
   
   Serial.println("");
   
-left.write(leftServo);
-right.write(rightServo);
-    
+  left.write(leftServo);
+  right.write(rightServo);
 }
 
 byte normalise(unsigned long val, unsigned long low, unsigned long high) {
