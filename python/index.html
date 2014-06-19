@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Firestorm Carrier Control</title>
+
+    <!-- Bootstrap -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <script src="jquery.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script>
+function updateBatteryLevel() {
+  $.get("battery", function(data) {
+    $("#batteryLevel").html(data);
+    window.setTimeout(updateBatteryLevel, 10000);
+  });
+}
+
+updateBatteryLevel();
+
+function allStop() {
+  //Not much point in doing anything with the response as we are about to be turned off.
+  $.get("allStop", function(data) {})
+}
+    </script>
+
+    <h2>Battery Level:</h2>
+    <div id="batteryLevel"></div>
+    <h2>All Stop</h2>
+    <a onClick="allStop()">Stop</a>
+  </body>
+</html>
