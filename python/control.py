@@ -6,7 +6,12 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ThreadingMixIn
 import argparse
 import threading
+import os
+import shutil
+from datetime import datetime
 from time import sleep
+
+DEBUG=True 
 
 class Control:
   def __init__(self):
@@ -15,11 +20,14 @@ class Control:
     self.args = parser.parse_args()    
 
     self.serial = serial.Serial(self.args.serial, 9600)
-    sleep(4) # sleep for 4 seconds for the arduino to reboot if it still has the appropriate links.
+    if not DEBUG:
+      sleep(4) # sleep for 4 seconds for the arduino to reboot if it still has the appropriate links.
 
     self.serialLock = Lock()
 
   def getBatteryLevel(self):
+    if DEBUG:
+      return float(datetime.now().hour) + float(datetime.now().minute) / 100
     self.serialLock.acquire()
     self.serial.write("b\n")
     line = "D"
@@ -35,6 +43,9 @@ class Control:
     return retval
 
   def sendAllStop(self):
+    if DEBUG:
+      print "ALL STOP CALLED"
+      return
     self.serialLock.acquire()
     self.serial.write("S\n")
     #We should be about to loose power but FWIW we will return!
@@ -70,7 +81,15 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
   #TODO guard /allStop behing POST instead of GET.
   def do_GET(self):
     path = self.path.rstrip('/')
-    if (path == "/allStop"):
+    if (path == "/" or path == "/index.html"):
+      self.sendFile("index.html", "text/html")
+    elif (path == "/jquery.js"):
+      self.sendFile("jquery.js", "text/javascript")
+    elif (path == "/bootstrap.min.js"):
+      self.sendFile("bootstrap.min.js", "text/javascript")
+    elif (path == "/bootstrap.min.css"):
+      self.sendFile("bootstrap.min.css", "text/css")
+    elif (path == "/allStop"):
       main.sendAllStop()
       self.send_response(200)
       self.end_headers()
@@ -82,6 +101,13 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
     else:
       self.send_response(404, "Unknown end-point")
 
+  def sendFile(self, name, ctype="text/plain"):
+    self.send_response(200)
+    self.send_header("Content-type", ctype)
+    self.end_headers()
+    src = open(os.path.join(os.path.dirname(__file__), name), "r")
+    shutil.copyfileobj(src, self.wfile)
+    src.close()
 
 main = Control()
 main.main()

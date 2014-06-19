@@ -29,16 +29,19 @@ unsigned long deadzone = 50;
 
 
 /*
- * How much does steering affect the tank tracks, particularly at speed. 
- * This can take a value from between 0 (no steering at all!) and 127 (extremely twitchy steering)
- *
- * This value is the difference between the 2 tracks (measured from -127 to 127) when the stick is in an extreme corner.
- *
- * NB. floor(log2(steeringCoefficient)) is the amount you have to move the stick up or down to have an affect on the tracks when the stick is to the extreme left or right
- * (i.e. the central vertical deadzone at the extreme of steering). 
- * This aspect can largely be ignored as even when this value is 127, the deadzone is only 8 positions either side of the middle (which isn't very many out of 127)
+ * How much does steering affect the tank tracks, particularly at speed.
+ * The "normal" forward/backward motion is adjusted by ((x*c1)/(y+c2))
+ * 
+ * Analysing the WA contour plot (http://wolfr.am/1jzwx7m):
+ * - The angle of the line for y=0 shows us how "twitchy" the steering is at low speed.
+ * -- This should reach the lowest/highest values at the extremes (but not before) to allow the fastest steering.
+ * - The value of x=-127, y=127 (top left) dictates how fast the steering is at high speed.
+ * -- If this is less than the value at x=0, y=0 then we will turn on the spot even if we are at maximum forward input (this is undesireable and hard to achieve!)
+ * -- The higher (lighter colour) this corner has, the least effective the steering is at speed.
+ * 
  */
-byte steeringCoefficient = 10;
+byte steeringCoefficient1 = 70;
+byte steeringCoefficient2 = 50;
 
 //A scaling of the output values. 255 allows full power. 0 would be disable output. 64 would be a good training mode where all outputs are scaled by a quarter.
 byte scaling = 255;
@@ -56,9 +59,8 @@ void setup()
   pinMode(xAxis, INPUT);
   pinMode(yAxis, INPUT);
   
-left.attach(leftPinOut, 1000, 2000);
-right.attach(rightPinOut, 1000, 2000);
-  
+  left.attach(leftPinOut, 1000, 2000);
+  right.attach(rightPinOut, 1000, 2000);
 
   
   pinMode(throttle, INPUT);
@@ -114,11 +116,12 @@ void loop()
   byte yVal = normalise(yDuration, yLow, yHigh);
 
   //convert from a 2d mode into tank tracks.
-  byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
-  byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient / (abs(yVal - 127) + 1))) + 127);
+  byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient1 / (abs(yVal - 127) + steeringCoefficient2))) + 127);
+  byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient1 / (abs(yVal - 127) + steeringCoefficient2))) + 127);
 
-int leftServo = map(leftTank, 0, 255, 0, 180);
-int rightServo = map(rightTank, 0, 255, 0, 180);
+  //servo library needs a value between 0 and 180
+  int leftServo = map(leftTank, 0, 255, 0, 180);
+  int rightServo = map(rightTank, 0, 255, 0, 180);
 
 if (throttleDuration < 1200) {
   leftServo = 90;
@@ -131,7 +134,7 @@ if (switchDuration > 1200){
  // digitalWrite(inverterPin, HIGH);
 }
 
-/*  
+  
   Serial.print(xDuration, DEC);
   Serial.print(", ");
   Serial.print(yDuration, DEC);
@@ -161,7 +164,7 @@ if (switchDuration > 1200){
   }
   
   Serial.println("");
-  */
+  
 left.write(leftServo);
 right.write(rightServo);
     checkSerial();
