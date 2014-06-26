@@ -15,7 +15,10 @@ int brakePin = 3; //One pin controls both electronic brakes
 int powerPin = 9;
 int selfPowerPin = 6;
 
-int inverterPin = 5;
+int utility1Pin = 5;
+// Extra utility pin definitions. Remove comment to use these pins for "utilities" (things to be turned on and off) Remove comments below in setup too.
+// int utility2Pin = A5;
+// int utility3Pin = A4;
 int HvPin = A0;
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
@@ -51,7 +54,9 @@ unsigned long yDuration;
 unsigned long throttleDuration = 1000;
 unsigned long switchDuration = 1000;
 
-unsigned long inverterState = 0;
+unsigned long utility1State = 0;
+unsigned long utility2State = 0;
+unsigned long utility3State = 0;
 
 void setup()
 {
@@ -71,7 +76,9 @@ void setup()
   
   pinMode(powerPin, OUTPUT);
   pinMode(selfPowerPin, OUTPUT);
-  pinMode(inverterPin, OUTPUT);
+  pinMode(utility1Pin, OUTPUT);
+//  pinMode(utility2Pin, OUTPUT);
+//  pinMode(utility3Pin, OUTPUT);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
   delay(1000);
@@ -129,9 +136,9 @@ if (throttleDuration < 1200) {
   failsafeLocked = 1;
 } 
 if (switchDuration > 1200){
- // digitalWrite(inverterPin, LOW);
+//switch "on" condition
 } else {
- // digitalWrite(inverterPin, HIGH);
+//switch "off" condition
 }
 
   
@@ -199,6 +206,21 @@ void batteryCheck() {
   Serial.println("");
 }
 
+//handler for utilities, accepts 3 commands: 1 turns the utility on. 2 turns it off. 9 requests serial output of the utility's current state
+void utility1(int command) {
+  if (command == 0) {
+    digitalWrite(utility1Pin, HIGH);
+    utility1State = 0;
+  } else if (command == 1) {
+    digitalWrite(utility1Pin, LOW);
+    utility1State = 1;
+  } else if (command == 9) {
+    Serial.print("U 1 ");
+    Serial.print(utility1State);
+    Serial.println("");
+  }
+}
+/*
 void inverterToggle() {
   if (inverterState == 0){
     digitalWrite(inverterPin, LOW);
@@ -212,7 +234,7 @@ void inverterToggle() {
     Serial.println("");
   }
 }
-
+*/
 void allStop() {
   digitalWrite(powerPin, HIGH);
   digitalWrite(selfPowerPin, HIGH);
@@ -234,11 +256,24 @@ void checkSerial() {
         case 'b':
           batteryCheck();
           break;
-        case 'i':
+     /*   case 'i':
           inverterToggle();
           break;
+     */
         case 'S':
           allStop();
+          break;
+      }
+    }
+    else if (bytesRead == 5) {
+      //a utility command or other instruction
+      switch (serialBuffer[0]) {
+        case 'u':
+          if (serialBuffer[2]) {
+            case '1':
+              utility1(serialBuffer[5]);
+            break;
+          }
           break;
       }
     }
