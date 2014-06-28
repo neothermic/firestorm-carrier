@@ -16,9 +16,9 @@ int powerPin = 9;
 int selfPowerPin = 6;
 
 int utility1Pin = 5;
-// Extra utility pin definitions. Remove comment to use these pins for "utilities" (things to be turned on and off) Remove comments below in setup too.
-// int utility2Pin = A5;
-// int utility3Pin = A4;
+int utility2Pin = A5;
+int utility3Pin = A4;
+
 int HvPin = A0;
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
@@ -77,8 +77,8 @@ void setup()
   pinMode(powerPin, OUTPUT);
   pinMode(selfPowerPin, OUTPUT);
   pinMode(utility1Pin, OUTPUT);
-//  pinMode(utility2Pin, OUTPUT);
-//  pinMode(utility3Pin, OUTPUT);
+  pinMode(utility2Pin, OUTPUT);
+  pinMode(utility3Pin, OUTPUT);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
   delay(1000);
@@ -206,7 +206,7 @@ void batteryCheck() {
   Serial.println("");
 }
 
-//handler for utilities, accepts 3 commands: 1 turns the utility on. 2 turns it off. 9 requests serial output of the utility's current state
+//handler for utilities, accepts 3 commands: 1 turns the utility on. 0 turns it off. 9 requests serial output of the utility's current state
 void utility1(char command) {
   if (command == '0') {
     digitalWrite(utility1Pin, HIGH);
@@ -220,21 +220,33 @@ void utility1(char command) {
     Serial.println("");
   }
 }
-/*
-void inverterToggle() {
-  if (inverterState == 0){
-    digitalWrite(inverterPin, LOW);
-    inverterState = 1;
-    Serial.print("D Inverter ON");
-    Serial.println("");
-  } else if (inverterState == 1){
-    digitalWrite(inverterPin, HIGH);
-    inverterState = 0;
-    Serial.print("D Inverter OFF");
+void utility2(char command) {
+  if (command == '0') {
+    digitalWrite(utility2Pin, HIGH);
+    utility2State = 0;
+  } else if (command == '1') {
+    digitalWrite(utility2Pin, LOW);
+    utility2State = 1;
+  } else if (command == '9') {
+    Serial.print("U 2 ");
+    Serial.print(utility2State);
     Serial.println("");
   }
 }
-*/
+void utility3(char command) {
+  if (command == '0') {
+    digitalWrite(utility3Pin, HIGH);
+    utility3State = 0;
+  } else if (command == '1') {
+    digitalWrite(utility3Pin, LOW);
+    utility3State = 1;
+  } else if (command == '9') {
+    Serial.print("U 3 ");
+    Serial.print(utility3State);
+    Serial.println("");
+  }
+}
+
 void allStop() {
   digitalWrite(powerPin, HIGH);
   digitalWrite(selfPowerPin, HIGH);
@@ -272,6 +284,12 @@ void checkSerial() {
           switch (serialBuffer[2]) {
             case '1':
               utility1(serialBuffer[4]);
+            break;
+            case '2':
+              utility2(serialBuffer[4]);
+            break;
+            case '3':
+              utility3(serialBuffer[4]);
             break;
           }
           break;
