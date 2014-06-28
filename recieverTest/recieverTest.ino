@@ -207,14 +207,14 @@ void batteryCheck() {
 }
 
 //handler for utilities, accepts 3 commands: 1 turns the utility on. 2 turns it off. 9 requests serial output of the utility's current state
-void utility1(int command) {
-  if (command == 0) {
+void utility1(char command) {
+  if (command == '0') {
     digitalWrite(utility1Pin, HIGH);
     utility1State = 0;
-  } else if (command == 1) {
+  } else if (command == '1') {
     digitalWrite(utility1Pin, LOW);
     utility1State = 1;
-  } else if (command == 9) {
+  } else if (command == '9') {
     Serial.print("U 1 ");
     Serial.print(utility1State);
     Serial.println("");
@@ -269,9 +269,9 @@ void checkSerial() {
       //a utility command or other instruction
       switch (serialBuffer[0]) {
         case 'u':
-          if (serialBuffer[2]) {
+          switch (serialBuffer[2]) {
             case '1':
-              utility1(serialBuffer[5]);
+              utility1(serialBuffer[4]);
             break;
           }
           break;
