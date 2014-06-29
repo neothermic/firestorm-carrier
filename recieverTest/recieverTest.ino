@@ -206,7 +206,7 @@ void batteryCheck() {
   Serial.println("");
 }
 
-//handler for utilities, accepts 3 commands: 1 turns the utility on. 0 turns it off. 9 requests serial output of the utility's current state
+//handlers for utilities, accepts 3 commands: 1 turns the utility on. 0 turns it off. 9 requests serial output of the utility's current state
 void utility1(char command) {
   if (command == '0') {
     digitalWrite(utility1Pin, HIGH);
@@ -247,13 +247,20 @@ void utility3(char command) {
   }
 }
 
-void allStop() {
+void allStop() { 
   digitalWrite(powerPin, HIGH);
   digitalWrite(selfPowerPin, HIGH);
   Serial.print("D ALL STOP");
   Serial.println("");
 }
-  
+
+void driveStop() { //stops the motor output without killing the machine dead. Engages brake.
+  scaling = 0;
+  brakeOn();
+  Serial.print("D DRIVE STOP");
+  Serial.println("");
+}
+
 //check for serial input and act accordingly
 void checkSerial() {
   if (Serial.available() > 0) {
@@ -267,13 +274,11 @@ void checkSerial() {
       switch (serialBuffer[0]) {
         case 'b':
           batteryCheck();
-          break;
-     /*   case 'i':
-          inverterToggle();
-          break;
-     */
-        case 'S':
+        case 'A':
           allStop();
+          break;
+        case 'S':
+          driveStop();
           break;
       }
     }
