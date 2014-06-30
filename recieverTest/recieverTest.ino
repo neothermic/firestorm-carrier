@@ -1,5 +1,5 @@
 #include <Servo.h>
-
+char serialBuffer[64];
 Servo left;
 Servo right;
 //pins for the PWM(?) input from the radio reciever.
@@ -15,8 +15,11 @@ int brakePin = 3; //One pin controls both electronic brakes
 int powerPin = 9;
 int selfPowerPin = 6;
 
-int inverterPin = 5;
+int utility1Pin = 5;
+int utility2Pin = A5;
+int utility3Pin = A4;
 
+int HvPin = A0;
 //baseline timings for axis inputs. These are the values sent when the stick is at the extreme left and right (or bottom and top). If in doubt make these slightly further apart than they need to be.
 unsigned long xLow = 1220;
 unsigned long xHigh = 1790;
@@ -51,6 +54,10 @@ unsigned long yDuration;
 unsigned long throttleDuration = 1000;
 unsigned long switchDuration = 1000;
 
+unsigned long utility1State = 0;
+unsigned long utility2State = 0;
+unsigned long utility3State = 0;
+
 void setup()
 {
   
@@ -60,6 +67,7 @@ void setup()
   left.attach(leftPinOut, 1000, 2000);
   right.attach(rightPinOut, 1000, 2000);
 
+  
   pinMode(throttle, INPUT);
   pinMode(switchPin, INPUT);
 
@@ -68,7 +76,9 @@ void setup()
   
   pinMode(powerPin, OUTPUT);
   pinMode(selfPowerPin, OUTPUT);
-  pinMode(inverterPin, OUTPUT);
+  pinMode(utility1Pin, OUTPUT);
+  pinMode(utility2Pin, OUTPUT);
+  pinMode(utility3Pin, OUTPUT);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
   delay(1000);
@@ -87,7 +97,7 @@ void loop()
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
 
-  //check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
+//check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
   unsigned long xCentre = (xLow + xHigh)/2;
   if (xDuration <= (xCentre + deadzone) && xDuration >= (xCentre - deadzone)){
     xLocked = 1;
@@ -97,7 +107,6 @@ void loop()
   } else if (xDuration < xCentre) {
     xDuration = (xDuration + deadzone);
   }
-
   unsigned long yCentre = (yLow + yHigh)/2;
   if (yDuration <= (yCentre + deadzone) && yDuration >= (yCentre - deadzone)){
     yLocked = 1;
@@ -121,17 +130,17 @@ void loop()
   int leftServo = map(leftTank, 0, 255, 0, 180);
   int rightServo = map(rightTank, 0, 255, 0, 180);
 
-  if (throttleDuration < 1200) {
-    leftServo = 90;
-    rightServo = 90;
-    failsafeLocked = 1;
-  } 
+if (throttleDuration < 1200) {
+  leftServo = 90;
+  rightServo = 90;
+  failsafeLocked = 1;
+} 
+if (switchDuration > 1200){
+//switch "on" condition
+} else {
+//switch "off" condition
+}
 
-  if (switchDuration > 1200){
-    digitalWrite(inverterPin, LOW);
-  } else {
-    digitalWrite(inverterPin, HIGH);
-  }
   
   Serial.print(xDuration, DEC);
   Serial.print(", ");
@@ -163,8 +172,9 @@ void loop()
   
   Serial.println("");
   
-  left.write(leftServo);
-  right.write(rightServo);
+left.write(leftServo);
+right.write(rightServo);
+    checkSerial();
 }
 
 byte normalise(unsigned long val, unsigned long low, unsigned long high) {
@@ -186,4 +196,109 @@ void brakeOn() {
 
 void brakeOff() {
   digitalWrite(brakePin, LOW);
+}
+
+void batteryCheck() {
+  int senseVoltage = analogRead(HvPin);
+  float voltage = senseVoltage * (31.786 / 1023.0);
+  Serial.print("B");
+  Serial.print(voltage);
+  Serial.println("");
+}
+
+//handlers for utilities, accepts 3 commands: 1 turns the utility on. 0 turns it off. 9 requests serial output of the utility's current state
+void utility1(char command) {
+  if (command == '0') {
+    digitalWrite(utility1Pin, HIGH);
+    utility1State = 0;
+  } else if (command == '1') {
+    digitalWrite(utility1Pin, LOW);
+    utility1State = 1;
+  } else if (command == '9') {
+    Serial.print("U 1 ");
+    Serial.print(utility1State);
+    Serial.println("");
+  }
+}
+void utility2(char command) {
+  if (command == '0') {
+    digitalWrite(utility2Pin, HIGH);
+    utility2State = 0;
+  } else if (command == '1') {
+    digitalWrite(utility2Pin, LOW);
+    utility2State = 1;
+  } else if (command == '9') {
+    Serial.print("U 2 ");
+    Serial.print(utility2State);
+    Serial.println("");
+  }
+}
+void utility3(char command) {
+  if (command == '0') {
+    digitalWrite(utility3Pin, HIGH);
+    utility3State = 0;
+  } else if (command == '1') {
+    digitalWrite(utility3Pin, LOW);
+    utility3State = 1;
+  } else if (command == '9') {
+    Serial.print("U 3 ");
+    Serial.print(utility3State);
+    Serial.println("");
+  }
+}
+
+void allStop() { 
+  digitalWrite(powerPin, HIGH);
+  digitalWrite(selfPowerPin, HIGH);
+  Serial.print("D ALL STOP");
+  Serial.println("");
+}
+
+void driveStop() { //stops the motor output without killing the machine dead. Engages brake.
+  scaling = 0;
+  brakeOn();
+  Serial.print("D DRIVE STOP");
+  Serial.println("");
+}
+
+//check for serial input and act accordingly
+void checkSerial() {
+  if (Serial.available() > 0) {
+    byte bytesRead = Serial.readBytesUntil('\n', serialBuffer, 64);
+
+    if (bytesRead == 0) {
+      //too little to be interesting
+    }
+    else if (bytesRead == 1) {
+      //single character, probably a debugging command
+      switch (serialBuffer[0]) {
+        case 'b':
+          batteryCheck();
+        case 'A':
+          allStop();
+          break;
+        case 'S':
+          driveStop();
+          break;
+      }
+    }
+    else if (bytesRead == 5) {
+      //a utility command or other instruction
+      switch (serialBuffer[0]) {
+        case 'u':
+          switch (serialBuffer[2]) {
+            case '1':
+              utility1(serialBuffer[4]);
+            break;
+            case '2':
+              utility2(serialBuffer[4]);
+            break;
+            case '3':
+              utility3(serialBuffer[4]);
+            break;
+          }
+          break;
+      }
+    }
+  }
 }
