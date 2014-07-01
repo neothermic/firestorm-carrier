@@ -1,0 +1,5 @@
+TODOs in control.py
+Buttons to set the sate of the utilities
+trip computer
+location
+camera
