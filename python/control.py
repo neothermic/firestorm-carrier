@@ -7,6 +7,7 @@ from SocketServer import ThreadingMixIn
 import argparse
 import threading
 import os
+import re
 import shutil
 from datetime import datetime
 from time import sleep
@@ -38,19 +39,71 @@ class Control:
     if line[0] != 'B':
       print "ERR: recieved an unexpected response from battery request: %s" % (repr(line), )
       return None
-    retval = float(line[1:]) #take a float from all except the leading 'b'
+    retval = float(line[1:]) #take a float from all except the leading 'B'
     self.serialLock.release()
     return retval
+
+  def sendDriveStop(self):
+    if DEBUG:
+      print "DRIVE STOP CALLED"
+      return
+    self.serialLock.acquire()
+    self.serial.write("S\n")
+    self.serialLock.release()
 
   def sendAllStop(self):
     if DEBUG:
       print "ALL STOP CALLED"
       return
     self.serialLock.acquire()
-    self.serial.write("S\n")
+    self.serial.write("A\n")
     #We should be about to loose power but FWIW we will return!
     self.serialLock.release()
 
+  def getUtility(self, num):
+    if DEBUG:
+      return True
+    
+    self.serialLock.acquire()
+    
+    self.serial.write("u %d 9\n" % (num,)) #TODO change 9 to ?
+    line = self.readNonDebugLine()
+    
+    if line[0] != 'U':
+      print "ERR: recieved an unexpected response from utility status request: %s" % (repr(line), )
+      self.serialLock.release()
+      return None
+    
+    if line[2] == '0':
+      retval = False
+    elif line[2] == '1':
+      retval == True
+    else:
+      print "ERR: recieved an unexpected response from utility status request: %s" % (repr(line), )
+      retval = None
+
+    self.serialLock.release()
+    return retval
+
+  def setUtility(self, num, state):
+    if DEBUG:
+      print "UTILITY %d SET TO %d" % (num, {False: 0, True: 1}[state])
+      return
+    
+    self.serialLock.acquire()
+    self.serial.write("u %d %d\n" % (num, {False: 0, True: 1}[state]))
+    self.serialLock.release()
+
+    #TODO read the status as an acknowledgement
+    return None
+
+  def readNonDebugLine(self):
+    """Read a line from self.serial, ignoring all of the debug lines. You must have the self.serialLock *before* calling this function"""
+    line = "D"
+    while line[0] == 'D':
+      line = self.serial.readline()
+#      print repr(line)
+    
   def main(self):
     #start the webserver then look for commands from stdin
     serverAddress = ('', 8000)
@@ -78,7 +131,7 @@ class CarrierControlServer(ThreadingMixIn, HTTPServer):
 
 
 class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
-  #TODO guard /allStop behing POST instead of GET.
+  #TODO guard /allStop behind POST instead of GET.
   def do_GET(self):
     path = self.path.rstrip('/')
     if (path == "/" or path == "/index.html"):
@@ -89,6 +142,11 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
       self.sendFile("bootstrap.min.js", "text/javascript")
     elif (path == "/bootstrap.min.css"):
       self.sendFile("bootstrap.min.css", "text/css")
+    elif (path == "/driveStop"):
+      main.sendDriveStop()
+      self.send_response(200)
+      self.end_headers()
+      self.wfile.write("Drive Stopping.")
     elif (path == "/allStop"):
       main.sendAllStop()
       self.send_response(200)
@@ -98,6 +156,32 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
       self.send_response(200)
       self.end_headers()
       self.wfile.write(main.getBatteryLevel())
+    elif (path.startswith("/utility/")):
+      subpath = path[9:]
+      m = re.match("^([0-9])+$", subpath)
+      if m:
+        #This is a query
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(repr(main.getUtility(int(m.group(1)))))
+      else:
+        m = re.match("^([0-9])+/on$")
+        if m:
+          #This is a set.
+          #TODO guard this behind POST and remove the "/on"?
+          self.send_response(200)
+          self.end_headers()
+          self.wfile.write(main.setUtility(int(m.group(1)), True))
+        else:
+          m = re.match("^([0-9])+/off$")
+          if m:
+            #This is a set.
+            #TODO guard this behind POST and remove the "/off"?
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(main.setUtility(int(m.group(1)), False))
+          else:
+            self.send_response(404, "Unknown end-point")
     else:
       self.send_response(404, "Unknown end-point")
 
