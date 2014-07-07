@@ -12,7 +12,7 @@ import shutil
 from datetime import datetime
 from time import sleep
 
-DEBUG=True 
+DEBUG=False
 DEBUG_UTILITY_STATES=[True, True, False]
 
 class Control:
