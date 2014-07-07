@@ -13,6 +13,7 @@ from datetime import datetime
 from time import sleep
 
 DEBUG=True 
+DEBUG_UTILITY_STATES=[True, True, False]
 
 class Control:
   def __init__(self):
@@ -62,7 +63,7 @@ class Control:
 
   def getUtility(self, num):
     if DEBUG:
-      return True
+      return DEBUG_UTILITY_STATES[num - 1]
     
     self.serialLock.acquire()
     
@@ -88,6 +89,7 @@ class Control:
   def setUtility(self, num, state):
     if DEBUG:
       print "UTILITY %d SET TO %d" % (num, {False: 0, True: 1}[state])
+      DEBUG_UTILITY_STATES[num - 1] = state
       return
     
     self.serialLock.acquire()
@@ -122,6 +124,10 @@ class Control:
         print self.getBatteryLevel()
       elif (value == "S"):
         self.sendAllStop()
+      elif (value[0] == 'u'):
+        print self.getUtility(int(value[2]))
+      elif (value[0] == 'U'):
+        self.setUtility(int(value[2]), value[4] == "1")
       else:
         print "huh?!"
 
@@ -165,7 +171,7 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(repr(main.getUtility(int(m.group(1)))))
       else:
-        m = re.match("^([0-9])+/on$")
+        m = re.match("^([0-9])+/on$", subpath)
         if m:
           #This is a set.
           #TODO guard this behind POST and remove the "/on"?
@@ -173,7 +179,7 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
           self.end_headers()
           self.wfile.write(main.setUtility(int(m.group(1)), True))
         else:
-          m = re.match("^([0-9])+/off$")
+          m = re.match("^([0-9])+/off$", subpath)
           if m:
             #This is a set.
             #TODO guard this behind POST and remove the "/off"?

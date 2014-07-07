@@ -17,7 +17,10 @@
   <body>
     <script src="jquery.js"></script>
     <script src="bootstrap.min.js"></script>
+    <!--<script src="https://raw.githubusercontent.com/gfxmonk/repr.js/master/repr.js"></script>-->
     <script>
+//////////
+// Battery level
 function updateBatteryLevel() {
   $.get("battery", function(data) {
     $("#batteryLevel").html(data);
@@ -27,24 +30,58 @@ function updateBatteryLevel() {
 
 updateBatteryLevel();
 
+////////
+// Utilities
+
 function updateUtility(num) {
   $.get("utility/" + num, function(data) {
-    $("#u" + num).html(data);
+    updateUtilityUI(num, data);
     window.setTimeout(function() {updateUtility(num)}, 10000);
   });
+}
+
+function updateUtilityUI(num, data) {
+  if (data === true || data == "True") {
+    $("#u" + num + " .on").addClass("btn-success active").removeClass("btn-default")
+    $("#u" + num + " .off").addClass("btn-default").removeClass("btn-danger active")
+  } else {
+    $("#u" + num + " .on").addClass("btn-default").removeClass("btn-success active")
+    $("#u" + num + " .off").addClass("btn-danger active").removeClass("btn-default")
+  }
+}
+
+function preUpdateUtilityUI(num) {
+  $("#u" + num + " .on").addClass("btn-default").removeClass("btn-success active")
+  $("#u" + num + " .off").addClass("btn-default").removeClass("btn-danger active")
 }
 
 updateUtility(1);
 updateUtility(2);
 updateUtility(3);
-function updateBatteryLevel() {
-  $.get("battery", function(data) {
-    $("#batteryLevel").html(data);
-    window.setTimeout(updateBatteryLevel, 10000);
-  });
+
+function changeUtility(num) {
+  oldState = $("#u" + num + " .on").hasClass("active");
+  preUpdateUtilityUI(num)
+
+  if (oldState) {
+    targetURL = "utility/" + num + "/off"
+  }
+  else {
+    targetURL = "utility/" + num + "/on"
+  }
+
+  $.get(targetURL)
+    .fail(function(data) {
+      updateUtilityUI(num, oldState);
+    })
+    .done(function(data) {
+      updateUtilityUI(num, !oldState);
+    });
 }
 
-updateBatteryLevel();
+///////////
+// Stop buttons
+
 function allStop() {
   //Not much point in doing anything with the response as we are about to be turned off.
   $.get("allStop", function(data) {})
@@ -52,12 +89,15 @@ function allStop() {
 
 function driveStop() {
   document.getElementById("drive-stop-btn").disabled=true;
-  //Not much point in doing anything with the response as we are about to be turned off.
+
   $.get("driveStop")
     .fail(function(data) {
+      //re-enable if the call failed.
       document.getElementById("drive-stop-btn").disabled=false;
     });
 }
+
+///////////
     </script>
 
     <h1 style="margin-left:15px">FireStorm Carrier Command</h1>
@@ -77,15 +117,24 @@ function driveStop() {
         </div>
         <div class="col-sm-3 text-center">
           <h4>Inverter Status</h4>
-          <div id="u1">on</div>
+          <div id="u1" class="btn-group btn-toggle" onClick="changeUtility(1);"> 
+            <button class="on btn btn-xs btn-default">ON</button>
+            <button class="off btn btn-xs btn-danger active">OFF</button>
+          </div>
         </div>
         <div class="col-sm-3 text-center">
           <h4>Utility 2 Status</h4>
-          <div id="u2">on</div>
+          <div id="u2" class="btn-group btn-toggle" onClick="changeUtility(2);"> 
+            <button class="on btn btn-xs btn-default">ON</button>
+            <button class="off btn btn-xs btn-danger active">OFF</button>
+          </div>
         </div>
         <div class="col-sm-3 text-center">
           <h4>Utility 3 Status</h4>
-          <div id="u3">off</div>
+          <div id="u3" class="btn-group btn-toggle" onClick="changeUtility(3);"> 
+            <button class="on btn btn-xs btn-default">ON</button>
+            <button class="off btn btn-xs btn-danger active">OFF</button>
+          </div>
         </div>
       </div>
     </div>
