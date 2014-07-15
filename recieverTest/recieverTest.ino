@@ -214,7 +214,7 @@ void utility1(char command) {
   } else if (command == '1') {
     digitalWrite(utility1Pin, LOW);
     utility1State = 1;
-  } else if (command == '9') {
+  } else if (command == '?') {
     Serial.print("U 1 ");
     Serial.print(utility1State);
     Serial.println("");
@@ -227,7 +227,7 @@ void utility2(char command) {
   } else if (command == '1') {
     digitalWrite(utility2Pin, LOW);
     utility2State = 1;
-  } else if (command == '9') {
+  } else if (command == '?') {
     Serial.print("U 2 ");
     Serial.print(utility2State);
     Serial.println("");
@@ -240,7 +240,7 @@ void utility3(char command) {
   } else if (command == '1') {
     digitalWrite(utility3Pin, LOW);
     utility3State = 1;
-  } else if (command == '9') {
+  } else if (command == '?') {
     Serial.print("U 3 ");
     Serial.print(utility3State);
     Serial.println("");
@@ -259,6 +259,13 @@ void driveStop() { //stops the motor output without killing the machine dead. En
   brakeOn();
   Serial.print("D DRIVE STOP");
   Serial.println("");
+}
+
+void driveScale(int newscale) { //sets a new scaling value, adjusting the effective speed of the machine
+  if (newscale > 0){
+    brakeOff();
+  }
+  scaling = newscale;
 }
 
 //check for serial input and act accordingly
@@ -298,6 +305,13 @@ void checkSerial() {
             break;
           }
           break;
+        case 'v':
+          switch (serialBuffer[2]) {
+            case 's':
+              driveScale(serialBuffer[4]);
+            break;
+          }
+        break;
       }
     }
   }
