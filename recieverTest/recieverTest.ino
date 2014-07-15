@@ -261,11 +261,18 @@ void driveStop() { //stops the motor output without killing the machine dead. En
   Serial.println("");
 }
 
-void driveScale(int newscale) { //sets a new scaling value, adjusting the effective speed of the machine
-  if (newscale > 0){
-    brakeOff();
+void driveScale(char newscale) { //sets a new scaling value, adjusting the effective speed of the machine
+  int scalePerc = 5;
+  if (newscale == 'F') {
+    int scalePerc = 10;
+  } else if (newscale == '?') {
+    Serial.print("v s ");
+    Serial.print(scaling);
+    Serial.println("");
+  } else {
+  scalePerc = newscale-'0';
+  scaling = map(scalePerc, 0, 10, 0, 255);
   }
-  scaling = newscale;
 }
 
 //check for serial input and act accordingly
