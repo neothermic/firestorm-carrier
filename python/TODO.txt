@@ -1,0 +1,4 @@
+TODOs in control.py
+trip computer
+location
+camera
