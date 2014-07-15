@@ -272,6 +272,9 @@ void driveScale(char newscale) { //sets a new scaling value, adjusting the effec
   } else {
   scalePerc = newscale-'0';
   scaling = map(scalePerc, 0, 10, 0, 255);
+  if (scaling > 0) {
+    brakeOff();
+  }
   }
 }
 
