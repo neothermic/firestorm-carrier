@@ -67,7 +67,7 @@ class Control:
     
     self.serialLock.acquire()
     
-    self.serial.write("u %d 9\n" % (num,)) #TODO change 9 to ?
+    self.serial.write("u %d ?\n" % (num,))
     line = self.readNonDebugLine()
     
     if line[0] != 'U':
@@ -120,7 +120,9 @@ class Control:
 
     while True:
       value = raw_input("Command? : ")
-      if (value == "b"):
+      if len(value) < 1:
+        self.printHelp()
+      elif (value == "b"):
         print self.getBatteryLevel()
       elif (value == "S"):
         self.sendAllStop()
@@ -130,7 +132,16 @@ class Control:
         self.setUtility(int(value[2]), value[4] == "1")
       else:
         print "huh?!"
+        self.printHelp()
 
+  def printHelp(self):
+    print """Enter one of the following commands:
+ b     - show the current battery level
+ S     - stop everything, including power to the control hardware
+ u 3   - get the state of utility 3.
+ U 3 1 - set the state of utility 3 to "on".
+ U 3 0 - set the state of utility 3 to "off".
+"""
 
 class CarrierControlServer(ThreadingMixIn, HTTPServer):
   pass
