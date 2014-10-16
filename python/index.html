@@ -8,6 +8,7 @@
 
     <!-- Bootstrap -->
     <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap-slider.min.css" rel="stylesheet">
     <style>
       .row {
         margin-bottom: 15px;
@@ -17,6 +18,7 @@
   <body>
     <script src="jquery.js"></script>
     <script src="bootstrap.min.js"></script>
+    <script src="bootstrap-slider.min.js"></script>
     <!--<script src="https://raw.githubusercontent.com/gfxmonk/repr.js/master/repr.js"></script>-->
     <script>
 //////////
@@ -98,6 +100,66 @@ function driveStop() {
 }
 
 ///////////
+// Drive scale slider
+
+function changeDriveScale(num) {
+  if (num == 10) {
+    strValue = "F";
+  } else {
+    strValue = "" + num;
+  }
+  $.get("driveScale/set/" + strValue)
+    .always(function(data) {
+      updateDriveScaleUI(strValue);
+    });
+}
+
+function updateDriveScaleUI(strValue){
+  if (strValue == "F") {
+    num = 10
+  } else {
+    num = parseInt(strValue)
+  }
+
+  $("#driveScale").slider().slider('setValue', num, false)
+
+  if (num > 0) {
+    document.getElementById("drive-stop-btn").disabled=false;
+  } else {
+    document.getElementById("drive-stop-btn").disabled=true;
+  }
+}
+
+function updateDriveScale() {
+  $.get("driveScale", function(data) {
+    updateDriveScaleUI(data);
+    window.setTimeout(updateDriveScale, 10000);
+  });
+}
+
+updateDriveScale()
+
+$(document).ready(function() {
+  $("#driveScale").slider({
+    reversed : true,
+    formatter: function(value) {
+      if (value == 0) { return "STOP"; }
+      return value;
+    },
+    tooltip: 'always'
+  });
+
+  $("#driveScale").on("slideStop", function(slideEvt) {
+    if (typeof slideEvt.value === "undefined") {
+      val = 0;
+    } else {
+      val = slideEvt.value;
+    }
+    changeDriveScale(val);
+  });
+});
+
+///////////
     </script>
 
     <h1 style="margin-left:15px">FireStorm Carrier Command</h1>
@@ -135,6 +197,12 @@ function driveStop() {
             <button class="on btn btn-xs btn-default">ON</button>
             <button class="off btn btn-xs btn-danger active">OFF</button>
           </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-3 text-center">
+          <h4>Drive Scaling</h4>
+          <input id="driveScale" type="text" data-slider-min="0" data-slider-max="10" data-slider-step="1" data-slider-value="0" data-slider-orientation="vertical"/>
         </div>
       </div>
     </div>

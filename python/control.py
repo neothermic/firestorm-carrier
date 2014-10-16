@@ -14,6 +14,7 @@ from time import sleep
 
 DEBUG=False
 DEBUG_UTILITY_STATES=[True, True, False]
+DEBUG_DRIVE_SCALE=1
 
 class Control:
   def __init__(self):
@@ -99,6 +100,43 @@ class Control:
     #TODO read the status as an acknowledgement
     return None
 
+  def getDriveScale(self):
+    if DEBUG:
+      return DEBUG_DRIVE_SCALE
+    
+    self.serialLock.acquire()
+    
+    self.serial.write("v s ?\n")
+    line = self.readNonDebugLine()
+    
+    if line[0:4] != 'v s ':
+      print "ERR: recieved an unexpected response from drive scale request: %s" % (repr(line), )
+      self.serialLock.release()
+      return None
+    
+    try:
+      retval = int(line[4:])
+    except ValueError:
+      print "ERR: recieved an unexpected response from drive scale request: %s" % (repr(line), )
+      retval = None
+      
+    self.serialLock.release()
+    return retval
+
+  def setDriveScale(self, newScale):
+    if DEBUG:
+      print "DRIVE_SCALE SET TO %s" % newScale
+      global DEBUG_DRIVE_SCALE
+      DEBUG_DRIVE_SCALE = newScale
+      return
+    
+    self.serialLock.acquire()
+    self.serial.write("v s %s\n" % (newScale))
+    self.serialLock.release()
+
+    #TODO read the status as an acknowledgement
+    return None
+
   def readNonDebugLine(self):
     """Read a line from self.serial, ignoring all of the debug lines. You must have the self.serialLock *before* calling this function"""
     line = "D"
@@ -130,6 +168,15 @@ class Control:
         print self.getUtility(int(value[2]))
       elif (value[0] == 'U'):
         self.setUtility(int(value[2]), value[4] == "1")
+      elif (value[0] == 'v'):
+        if (value[2] == 's'):
+          if (value[4] == '?'):
+            print self.getDriveScale()
+          else:
+            self.setDriveScale(value[4])
+        else:
+          print "'v' must be folowed by 's' currently."
+          self.printHelp()
       else:
         print "huh?!"
         self.printHelp()
@@ -141,6 +188,8 @@ class Control:
  u 3   - get the state of utility 3.
  U 3 1 - set the state of utility 3 to "on".
  U 3 0 - set the state of utility 3 to "off".
+ v s 5 - scale the drive speed to half of the maximum power.
+ v s F - scale the drive speed to full power.
 """
 
 class CarrierControlServer(ThreadingMixIn, HTTPServer):
@@ -159,6 +208,10 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
       self.sendFile("bootstrap.min.js", "text/javascript")
     elif (path == "/bootstrap.min.css"):
       self.sendFile("bootstrap.min.css", "text/css")
+    elif (path == "/bootstrap-slider.min.js"):
+      self.sendFile("bootstrap-slider.min.js", "text/javascript")
+    elif (path == "/bootstrap-slider.min.css"):
+      self.sendFile("bootstrap-slider.min.css", "text/css")
     elif (path == "/driveStop"):
       main.sendDriveStop()
       self.send_response(200)
@@ -199,6 +252,18 @@ class CarrierControlServerRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(main.setUtility(int(m.group(1)), False))
           else:
             self.send_response(404, "Unknown end-point")
+    elif (path == "/driveScale"):
+      #This is a query
+      self.send_response(200)
+      self.end_headers()
+      self.wfile.write(main.getDriveScale())
+    elif (path.startswith("/driveScale/set/")):
+      #This is a set
+      #TODO guard this behind POST and move the value out of the url?
+      subpath = path[16:]
+      self.send_response(200)
+      self.end_headers()
+      self.wfile.write(main.setDriveScale(subpath))
     else:
       self.send_response(404, "Unknown end-point")
 
