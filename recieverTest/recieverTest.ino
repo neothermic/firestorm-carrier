@@ -32,7 +32,13 @@ unsigned long deadzone = 50;
 
 
 /*
- * How much does steering affect the tank tracks, particularly at speed.
+ * There are 3 different possible methods for turning an X/Y youstick movement into the tank tracks input needed by the motors.
+ * 
+ * Each method has 1 or 2 coefficients which control how much does steering affects the tank tracks.
+ *
+ * Method 1
+ * ========
+ *
  * The "normal" forward/backward motion is adjusted by ((x*c1)/(y+c2))
  * 
  * Analysing the WA contour plot (http://wolfr.am/1jzwx7m):
@@ -42,9 +48,31 @@ unsigned long deadzone = 50;
  * -- If this is less than the value at x=0, y=0 then we will turn on the spot even if we are at maximum forward input (this is undesireable and hard to achieve!)
  * -- The higher (lighter colour) this corner has, the least effective the steering is at speed.
  * 
+ * Method 2 - should yield less jerky steering but might be a bit slow to start.
+ * ========
+ *
+ * http://po.st/s1MttS 
+ *
+ * Only 1 coefficient which is inverted. 1 will mean steering is harsh, 10 means steering will barely have an effect.
+ *
+ * Method 3 - is simpler but might not be as good?
+ * ========
+ *
+ * http://po.st/hmBo4G 
+ *
+ * 2 coefficients which are both inverted. 
+ *  - 1 changes how effective the throttle is (1 means full power at full throttle, no steering. 1.5 means you only reach full power if you are also steering).
+ *  - 2 changes how effective the steering is (1 means twitchy steering and 10 means ineffective steering)
  */
-byte steeringCoefficient1 = 70;
-byte steeringCoefficient2 = 50;
+byte steeringMethod = 1;
+
+byte steeringCoefficient1_1 = 70;
+byte steeringCoefficient1_2 = 50;
+
+byte steeringCoefficient2_1 = 3;
+
+byte steeringCoefficient3_1 = 1;
+byte steeringCoefficient3_2 = 2;
 
 //A scaling of the output values. 255 allows full power. 0 would be disable output. 64 would be a good training mode where all outputs are scaled by a quarter.
 byte scaling = 255;
@@ -123,8 +151,18 @@ void loop()
   byte yVal = normalise(yDuration, yLow, yHigh);
 
   //convert from a 2d mode into tank tracks.
-  byte leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient1 / (abs(yVal - 127) + steeringCoefficient2))) + 127);
-  byte rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient1 / (abs(yVal - 127) + steeringCoefficient2))) + 127);
+  byte leftTank;
+  byte rightTank;
+  if (steeringMethod == 1) {
+    leftTank = pegToByte(((yVal - 127) + ((xVal - 127) * steeringCoefficient1_1 / (abs(yVal - 127) + steeringCoefficient1_2))) + 127);
+    rightTank = pegToByte(((yVal - 127) - ((xVal - 127) * steeringCoefficient1_1 / (abs(yVal - 127) + steeringCoefficient1_2))) + 127);
+  } else if (steeringMethod == 2) {
+    leftTank = pegToByte((((yVal - 127) * abs(yVal - 127) / 127) + ((xVal - 127) / steeringCoefficient2_1)) + 127);
+    rightTank = pegToByte((((yVal - 127) * abs(yVal - 127) / 127) - ((xVal - 127) / steeringCoefficient2_1)) + 127);
+  } else {
+    leftTank = pegToByte((((yVal - 127) / steeringCoefficient3_1) + ((xVal - 127) / steeringCoefficient3_1 )) + 127);
+    rightTank = pegToByte((((yVal - 127) / steeringCoefficient3_1) - ((xVal - 127) / steeringCoefficient3_1 )) + 127);
+  }
 
   //servo library needs a value between 0 and 180
   int leftServo = map(leftTank, 0, 255, 0, 180);
