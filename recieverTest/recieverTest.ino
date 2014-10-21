@@ -179,7 +179,7 @@ if (switchDuration > 1200){
 //switch "off" condition
 }
 
-  
+  Serial.print("D ");  
   Serial.print(xDuration, DEC);
   Serial.print(", ");
   Serial.print(yDuration, DEC);
@@ -335,6 +335,7 @@ void checkSerial() {
       switch (serialBuffer[0]) {
         case 'b':
           batteryCheck();
+          break;
         case 'A':
           allStop();
           break;
@@ -350,22 +351,22 @@ void checkSerial() {
           switch (serialBuffer[2]) {
             case '1':
               utility1(serialBuffer[4]);
-            break;
+              break;
             case '2':
               utility2(serialBuffer[4]);
-            break;
+              break;
             case '3':
               utility3(serialBuffer[4]);
-            break;
+              break;
           }
           break;
         case 'v':
           switch (serialBuffer[2]) {
             case 's':
               driveScale(serialBuffer[4]);
-            break;
+              break;
           }
-        break;
+          break;
       }
     }
   }
