@@ -25,6 +25,10 @@ class Control:
     self.serial = serial.Serial(self.args.serial, 9600, timeout=5)
     if not DEBUG:
       sleep(4) # sleep for 4 seconds for the arduino to reboot if it still has the appropriate links.
+      try:
+        self.serial.readline() #read a line of debug output (if there is any) so that we get a complete line next time.
+      except serial.SerialTimeoutException:
+        pass
 
     self.serialLock = Lock()
 
@@ -34,6 +38,11 @@ class Control:
     self.serialLock.acquire()
     self.serial.write("b\n")
     line = self.readNonDebugLine()
+
+    if line == None:
+      print "ERR: didn't recieve a response from battery request")
+      self.serialLock.release()
+      return None
     
     if line[0] != 'B':
       print "ERR: recieved an unexpected response from battery request: %s" % (repr(line), )
@@ -68,6 +77,11 @@ class Control:
     
     self.serial.write("u %d ?\n" % (num,))
     line = self.readNonDebugLine()
+
+    if line == None:
+      print "ERR: didn't recieve a response from utility status request")
+      self.serialLock.release()
+      return None
     
     if line[0] != 'U':
       print "ERR: recieved an unexpected response from utility status request: %s" % (repr(line), )
@@ -106,6 +120,11 @@ class Control:
     
     self.serial.write("v s ?\n")
     line = self.readNonDebugLine()
+
+    if line == None:
+      print "ERR: didn't recieve a response from drive scale request")
+      self.serialLock.release()
+      return None
     
     if line[0:4] != 'v s ':
       print "ERR: recieved an unexpected response from drive scale request: %s" % (repr(line), )
@@ -136,9 +155,18 @@ class Control:
     return None
 
   def readNonDebugLine(self):
-    """Read a line from self.serial, ignoring all of the debug lines. You must have the self.serialLock *before* calling this function"""
+    """Read a line from self.serial, ignoring all of the debug lines. 
+       You must have the self.serialLock *before* calling this function
+       
+       Returns None if we couldn't read a non-debug line in a reasonable amount of time.
+    """
     line = "D"
+    linesRead = 0
     while line == None or line == "" or line[0] == 'D':
+      linesRead += 1
+      if linesRead == 100:
+        return None
+
       try:
         line = self.serial.readline()
         print "."
