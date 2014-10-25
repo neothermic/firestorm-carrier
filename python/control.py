@@ -22,7 +22,7 @@ class Control:
     parser.add_argument('-s', '--serial', type=str, help='serial device to which the arduino is connected')
     self.args = parser.parse_args()    
 
-    self.serial = serial.Serial(self.args.serial, 9600)
+    self.serial = serial.Serial(self.args.serial, 9600, timeout=5)
     if not DEBUG:
       sleep(4) # sleep for 4 seconds for the arduino to reboot if it still has the appropriate links.
 
@@ -33,13 +33,11 @@ class Control:
       return float(datetime.now().hour) + float(datetime.now().minute) / 100
     self.serialLock.acquire()
     self.serial.write("b\n")
-    line = "D"
-    while line[0] == 'D':
-      line = self.serial.readline()
-#      print repr(line)
+    line = self.readNonDebugLine()
     
     if line[0] != 'B':
       print "ERR: recieved an unexpected response from battery request: %s" % (repr(line), )
+      self.serialLock.release()
       return None
     retval = float(line[1:]) #take a float from all except the leading 'B'
     self.serialLock.release()
@@ -79,7 +77,7 @@ class Control:
     if line[2] == '0':
       retval = False
     elif line[2] == '1':
-      retval == True
+      retval = True
     else:
       print "ERR: recieved an unexpected response from utility status request: %s" % (repr(line), )
       retval = None
@@ -140,10 +138,16 @@ class Control:
   def readNonDebugLine(self):
     """Read a line from self.serial, ignoring all of the debug lines. You must have the self.serialLock *before* calling this function"""
     line = "D"
-    while line[0] == 'D':
-      line = self.serial.readline()
-#      print repr(line)
-    
+    while line == None or line == "" or line[0] == 'D':
+      try:
+        line = self.serial.readline()
+        print "."
+      except serial.SerialTimeoutException:
+        print "T"
+      #print repr(line)
+
+    return line
+
   def main(self):
     #start the webserver then look for commands from stdin
     serverAddress = ('', 8000)
