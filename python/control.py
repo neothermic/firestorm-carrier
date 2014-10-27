@@ -40,7 +40,7 @@ class Control:
     line = self.readNonDebugLine()
 
     if line == None:
-      print "ERR: didn't recieve a response from battery request")
+      print "ERR: didn't recieve a response from battery request"
       self.serialLock.release()
       return None
     
@@ -79,7 +79,7 @@ class Control:
     line = self.readNonDebugLine()
 
     if line == None:
-      print "ERR: didn't recieve a response from utility status request")
+      print "ERR: didn't recieve a response from utility status request"
       self.serialLock.release()
       return None
     
@@ -122,7 +122,7 @@ class Control:
     line = self.readNonDebugLine()
 
     if line == None:
-      print "ERR: didn't recieve a response from drive scale request")
+      print "ERR: didn't recieve a response from drive scale request"
       self.serialLock.release()
       return None
     
@@ -162,19 +162,22 @@ class Control:
     """
     line = "D"
     linesRead = 0
-    while line == None or line == "" or line[0] == 'D':
-      linesRead += 1
-      if linesRead == 100:
-        return None
+    try: 
+      while line == None or line == "" or line[0] == 'D':
+        linesRead += 1
+        if linesRead == 100:
+          return None
 
-      try:
-        line = self.serial.readline()
-        print "."
-      except serial.SerialTimeoutException:
-        print "T"
-      #print repr(line)
+        try:
+          line = self.serial.readline()
+          print "."
+        except serial.SerialTimeoutException:
+          print "T"
+        #print repr(line)
 
-    return line
+      return line
+    except KeyboardInterruptException:
+      return None
 
   def main(self):
     #start the webserver then look for commands from stdin
