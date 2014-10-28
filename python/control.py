@@ -8,6 +8,7 @@ import argparse
 import threading
 import os
 import re
+import sys
 import shutil
 from datetime import datetime
 from time import sleep
@@ -20,7 +21,7 @@ class Control:
   def __init__(self):
     parser = argparse.ArgumentParser(description='Firestorm carrier control.')
     parser.add_argument('-s', '--serial', type=str, help='serial device to which the arduino is connected')
-    self.args = parser.parse_args()    
+    self.args = parser.parse_args()
 
     self.serial = serial.Serial(self.args.serial, 9600, timeout=5)
     if not DEBUG:
@@ -50,7 +51,7 @@ class Control:
       print "ERR: didn't recieve a response from battery request"
       self.serialLock.release()
       return None
-    
+
     if line[0] != 'B':
       print "ERR: recieved an unexpected response from battery request: %s" % (repr(line), )
       self.serialLock.release()
@@ -79,9 +80,9 @@ class Control:
   def getUtility(self, num):
     if DEBUG:
       return DEBUG_UTILITY_STATES[num - 1]
-    
+
     self.serialLock.acquire()
-    
+
     self.serial.write("u %d ?\n" % (num,))
     line = self.readNonDebugLine()
 
@@ -89,12 +90,12 @@ class Control:
       print "ERR: didn't recieve a response from utility status request"
       self.serialLock.release()
       return None
-    
+
     if line[0] != 'U':
       print "ERR: recieved an unexpected response from utility status request: %s" % (repr(line), )
       self.serialLock.release()
       return None
-    
+
     if line[2] == '0':
       retval = False
     elif line[2] == '1':
@@ -111,7 +112,7 @@ class Control:
       print "UTILITY %d SET TO %d" % (num, {False: 0, True: 1}[state])
       DEBUG_UTILITY_STATES[num - 1] = state
       return
-    
+
     self.serialLock.acquire()
     self.serial.write("u %d %d\n" % (num, {False: 0, True: 1}[state]))
     self.serialLock.release()
@@ -122,9 +123,9 @@ class Control:
   def getDriveScale(self):
     if DEBUG:
       return DEBUG_DRIVE_SCALE
-    
+
     self.serialLock.acquire()
-    
+
     self.serial.write("v s ?\n")
     line = self.readNonDebugLine()
 
@@ -132,18 +133,18 @@ class Control:
       print "ERR: didn't recieve a response from drive scale request"
       self.serialLock.release()
       return None
-    
+
     if line[0:4] != 'v s ':
       print "ERR: recieved an unexpected response from drive scale request: %s" % (repr(line), )
       self.serialLock.release()
       return None
-    
+
     try:
       retval = int(line[4:])
     except ValueError:
       print "ERR: recieved an unexpected response from drive scale request: %s" % (repr(line), )
       retval = None
-      
+
     self.serialLock.release()
     return retval
 
@@ -153,7 +154,7 @@ class Control:
       global DEBUG_DRIVE_SCALE
       DEBUG_DRIVE_SCALE = newScale
       return
-    
+
     self.serialLock.acquire()
     self.serial.write("v s %s\n" % (newScale))
     self.serialLock.release()
@@ -187,12 +188,12 @@ class Control:
   def readNonDebugLine(self):
     """Read a line from self.serial, ignoring all of the debug lines. 
        You must have the self.serialLock *before* calling this function
-       
+
        Returns None if we couldn't read a non-debug line in a reasonable amount of time.
     """
     line = "D"
     linesRead = 0
-    try: 
+    try:
       while line == None or line == "" or line[0] == 'D':
         linesRead += 1
         if linesRead == 100:
@@ -200,13 +201,15 @@ class Control:
 
         try:
           line = self.serial.readline()
-          print "."
+          sys.stdout.write(".")
+          sys.stdout.flush()
         except serial.SerialTimeoutException:
-          print "T"
+          sys.stdout.write("T")
+          sys.stdout.flush()
         #print repr(line)
 
       return line
-    except KeyboardInterruptException:
+    except KeyboardInterrupt:
       return None
 
   def main(self):
