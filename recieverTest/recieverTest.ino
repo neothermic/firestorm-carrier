@@ -2,6 +2,9 @@
 char serialBuffer[64];
 Servo left;
 Servo right;
+byte printDebug = 1;
+
+
 //pins for the PWM(?) input from the radio reciever.
 int xAxis = 8;
 int yAxis = 7;
@@ -125,7 +128,7 @@ void loop()
   yDuration = pulseIn(yAxis, HIGH, 1000000);
   throttleDuration = pulseIn(throttle, HIGH, 1000000);
 
-//check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
+  //check to see if the values fall within the deadzone and adjust the values backwards to keep fine control intact
   unsigned long xCentre = (xLow + xHigh)/2;
   if (xDuration <= (xCentre + deadzone) && xDuration >= (xCentre - deadzone)){
     xLocked = 1;
@@ -168,51 +171,55 @@ void loop()
   int leftServo = map(leftTank, 0, 255, 0, 180);
   int rightServo = map(rightTank, 0, 255, 0, 180);
 
-if (throttleDuration < 1200) {
-  leftServo = 90;
-  rightServo = 90;
-  failsafeLocked = 1;
-} 
-if (switchDuration > 1200){
-//switch "on" condition
-} else {
-//switch "off" condition
-}
-
-  Serial.print("D ");  
-  Serial.print(xDuration, DEC);
-  Serial.print(", ");
-  Serial.print(yDuration, DEC);
-  
-  Serial.print(" => ");  
-
-  Serial.print(xVal, DEC);
-  Serial.print(", ");
-  Serial.print(yVal, DEC);
-  
-  Serial.print(" => ");  
-
-  Serial.print(leftServo, DEC);
-  Serial.print(", ");
-  Serial.print(rightServo, DEC);
-  if (xLocked == 1){
-    Serial.print(", ");
-    Serial.print("X Deadzone");
+  if (throttleDuration < 1200) {
+    leftServo = 90;
+    rightServo = 90;
+    failsafeLocked = 1;
   }
-  if (yLocked == 1){
-    Serial.print(", ");
-    Serial.print("Y Deadzone");
+
+  if (switchDuration > 1200){
+    //switch "on" condition
+  } else {
+    //switch "off" condition
   }
-  if (failsafeLocked == 1){
+
+  if (printDebug) {
+    Serial.print("D ");
+    Serial.print(xDuration, DEC);
     Serial.print(", ");
-    Serial.print("Failsafe");
-  }
+    Serial.print(yDuration, DEC);
   
-  Serial.println("");
+    Serial.print(" => ");  
+
+    Serial.print(xVal, DEC);
+    Serial.print(", ");
+    Serial.print(yVal, DEC);
   
-left.write(leftServo);
-right.write(rightServo);
-    checkSerial();
+    Serial.print(" => ");  
+
+    Serial.print(leftServo, DEC);
+    Serial.print(", ");
+    Serial.print(rightServo, DEC);
+    if (xLocked == 1){
+      Serial.print(", ");
+      Serial.print("X Deadzone");
+    }
+    if (yLocked == 1){
+      Serial.print(", ");
+      Serial.print("Y Deadzone");
+    }
+    if (failsafeLocked == 1){
+      Serial.print(", ");
+      Serial.print("Failsafe");
+    }
+  
+    Serial.println("");
+  }  
+  
+  left.write(leftServo);
+  right.write(rightServo);
+  
+  checkSerial();
 }
 
 byte normalise(unsigned long val, unsigned long low, unsigned long high) {
@@ -288,14 +295,18 @@ void utility3(char command) {
 void allStop() { 
   digitalWrite(powerPin, HIGH);
   digitalWrite(selfPowerPin, HIGH);
-  Serial.print("D ALL STOP");
+  if (printDebug) {
+    Serial.print("D ALL STOP");
+  }  
   Serial.println("");
 }
 
 void driveStop() { //stops the motor output without killing the machine dead. Engages brake.
   scaling = 0;
   brakeOn();
-  Serial.print("D DRIVE STOP");
+  if (printDebug) {
+    Serial.print("D DRIVE STOP");
+  }
   Serial.println("");
 }
 
@@ -341,6 +352,12 @@ void checkSerial() {
           break;
         case 'S':
           driveStop();
+          break;
+        case 'D':
+          printDebug = 1;
+          break;
+        case 'd':
+          printDebug = 0;
           break;
       }
     }
