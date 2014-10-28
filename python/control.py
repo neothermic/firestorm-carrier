@@ -24,11 +24,18 @@ class Control:
 
     self.serial = serial.Serial(self.args.serial, 9600, timeout=5)
     if not DEBUG:
-      sleep(4) # sleep for 4 seconds for the arduino to reboot if it still has the appropriate links.
+      #sleep for 4 seconds for the arduino to reboot if it still has the appropriate links.
+      sleep(4)
+      
+      #tell the arduino not to spam us with debug messages (filling up it's serial output buffer, making real messages go missing)
+      self.serial.write("d\n")
+
+      #read a line of debug output (if there is any) so that we get a complete line next time.
       try:
-        self.serial.readline() #read a line of debug output (if there is any) so that we get a complete line next time.
+        self.serial.readline()
       except serial.SerialTimeoutException:
         pass
+        
 
     self.serialLock = Lock()
 
@@ -154,6 +161,29 @@ class Control:
     #TODO read the status as an acknowledgement
     return None
 
+  def monitorDebug(self):
+    if DEBUG:
+      try:
+        while True:
+          print "Yo Dawg!"
+          sleep(1)
+      except KeyboardInterruptException:
+        return # break out of the infinite loop
+        
+    self.serialLock.acquire()
+    self.serial.write("D\n")
+    try: 
+      while True:
+        try:
+          print self.serial.readline()
+        except serial.SerialTimeoutException as e:
+          print e
+    except KeyboardInterruptException:
+      pass # break out of the infinite loop
+
+    self.serial.write("d\n")
+    self.serialLock.release()
+
   def readNonDebugLine(self):
     """Read a line from self.serial, ignoring all of the debug lines. 
        You must have the self.serialLock *before* calling this function
@@ -199,6 +229,8 @@ class Control:
         print self.getBatteryLevel()
       elif (value == "S"):
         self.sendAllStop()
+      elif (value == "D"):
+        self.monitorDebug()
       elif (value[0] == 'u'):
         print self.getUtility(int(value[2]))
       elif (value[0] == 'U'):
@@ -225,6 +257,7 @@ class Control:
  U 3 0 - set the state of utility 3 to "off".
  v s 5 - scale the drive speed to half of the maximum power.
  v s F - scale the drive speed to full power.
+ D     - monitor debug messages from the arduino. ctrl-C to stop.
 """
 
 class CarrierControlServer(ThreadingMixIn, HTTPServer):
