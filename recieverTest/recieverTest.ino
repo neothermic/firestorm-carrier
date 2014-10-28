@@ -314,6 +314,10 @@ void driveScale(char newScale) { //sets a new scaling value, adjusting the effec
   int scalePerc;
   if (newScale == 'F') {
     scalePerc = 10;
+    scaling = map(scalePerc, 0, 10, 0, 255);
+    if (scaling > 0) {
+      brakeOff();
+    }
   } else if (newScale == '?') {
     Serial.print("v s ");
     //TODO: Would rounding mean we read back a different value to what we set?
@@ -326,10 +330,10 @@ void driveScale(char newScale) { //sets a new scaling value, adjusting the effec
     Serial.println("");
   } else {
     scalePerc = newScale-'0'; // char -> int
-  }
-  scaling = map(scalePerc, 0, 10, 0, 255);
-  if (scaling > 0) {
-    brakeOff();
+    scaling = map(scalePerc, 0, 10, 0, 255);
+    if (scaling > 0) {
+      brakeOff();
+    }
   }
 }
 
