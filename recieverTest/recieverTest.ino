@@ -166,6 +166,9 @@ void loop()
     leftTank = pegToByte((((yVal - 127) / steeringCoefficient3_1) + ((xVal - 127) / steeringCoefficient3_1 )) + 127);
     rightTank = pegToByte((((yVal - 127) / steeringCoefficient3_1) - ((xVal - 127) / steeringCoefficient3_1 )) + 127);
   }
+  
+  leftTank = ((leftTank - 127) * scaling / 255) + 127;
+  rightTank = ((rightTank - 127) * scaling / 255) + 127;
 
   //servo library needs a value between 0 and 180
   int leftServo = map(leftTank, 0, 255, 0, 180);
