@@ -96,9 +96,12 @@ class Control:
       self.serialLock.release()
       return None
 
-    if line[2] == '0':
+    if line[2] != str(num):
+      print "ERR: recieved an unexpected response from utility status request (wrong utilities status reported: %s" % (repr(line), )
+
+    if line[4] == '0':
       retval = False
-    elif line[2] == '1':
+    elif line[4] == '1':
       retval = True
     else:
       print "ERR: recieved an unexpected response from utility status request: %s" % (repr(line), )
@@ -139,11 +142,14 @@ class Control:
       self.serialLock.release()
       return None
 
-    try:
-      retval = int(line[4:])
-    except ValueError:
-      print "ERR: recieved an unexpected response from drive scale request: %s" % (repr(line), )
-      retval = None
+    if line[4] == 'F':
+      retval = 'F'
+    else:
+      try:
+        retval = str(int(line[4:]))
+      except ValueError:
+        print "ERR: recieved an unexpected response from drive scale request: %s" % (repr(line), )
+        retval = None
 
     self.serialLock.release()
     return retval
@@ -168,7 +174,7 @@ class Control:
         while True:
           print "Yo Dawg!"
           sleep(1)
-      except KeyboardInterruptException:
+      except KeyboardInterrupt:
         return # break out of the infinite loop
         
     self.serialLock.acquire()
@@ -179,8 +185,13 @@ class Control:
           print self.serial.readline()
         except serial.SerialTimeoutException as e:
           print e
-    except KeyboardInterruptException:
-      pass # break out of the infinite loop
+    except KeyboardInterrupt:
+      #In case we were interupted and only read a partial line, 
+      #read a line of debug output (if there is any) so that we get a complete line next time.
+      try:
+        self.serial.readline()
+      except serial.SerialTimeoutException:
+        pass
 
     self.serial.write("d\n")
     self.serialLock.release()
@@ -230,8 +241,10 @@ class Control:
         self.printHelp()
       elif (value == "b"):
         print self.getBatteryLevel()
-      elif (value == "S"):
+      elif (value == "A"):
         self.sendAllStop()
+      elif (value == "S"):
+        self.sendDriveStop()
       elif (value == "D"):
         self.monitorDebug()
       elif (value[0] == 'u'):
@@ -254,7 +267,8 @@ class Control:
   def printHelp(self):
     print """Enter one of the following commands:
  b     - show the current battery level
- S     - stop everything, including power to the control hardware
+ A     - stop everything, including power to the control hardware
+ S     - stop the drive motors and apply the electronic brakes. Use "v s F" to revert back to full power.
  u 3   - get the state of utility 3.
  U 3 1 - set the state of utility 3 to "on".
  U 3 0 - set the state of utility 3 to "off".
