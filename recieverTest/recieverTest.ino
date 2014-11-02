@@ -11,8 +11,8 @@ int yAxis = 7;
 int throttle = 12;
 int switchPin = 4;
 
-int leftPinOut = 11;
-int rightPinOut = 10;
+int leftPinOut = 10;
+int rightPinOut = 11;
 int brakePin = 3; //One pin controls both electronic brakes
 
 int powerPin = 9;
@@ -67,12 +67,12 @@ unsigned long deadzone = 50;
  *  - 1 changes how effective the throttle is (1 means full power at full throttle, no steering. 1.5 means you only reach full power if you are also steering).
  *  - 2 changes how effective the steering is (1 means twitchy steering and 10 means ineffective steering)
  */
-byte steeringMethod = 1;
+byte steeringMethod = 2;
 
 byte steeringCoefficient1_1 = 70;
 byte steeringCoefficient1_2 = 50;
 
-byte steeringCoefficient2_1 = 3;
+byte steeringCoefficient2_1 = 2;
 
 byte steeringCoefficient3_1 = 1;
 byte steeringCoefficient3_2 = 2;
