@@ -10,7 +10,7 @@ Geofencing
 	Don't think the machine 'escaping' is the biggest issue.
 
 Emergency Stop Button - DONE
-	Costly but could be worthwhile. Easy enough to implement. - Because current implementation cuts power, the electronic brake in the new motors is engaged on E-stop aswell.
+	Costly but could be worthwhile. Easy enough to implement. - Because current implementation cuts power, the electronic brake in the new motors is engaged on E-stop aswell. IN addition, we are working on an "ALL STOP" command for the web interface. 
 
 Impact detection
 	Simple microswitch operated spring bar on the front of the machine. Has the potential to be quite destructive to the switch if not 		constructed properly. Probably not the best option.

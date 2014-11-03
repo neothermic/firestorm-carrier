@@ -1,24 +1,24 @@
-Min requirements:
+Basics
 	
 
 	Frame/chassis
 		
-		The vehicle will likely need a stable chassis which provides a flat platform above the mower base to keep everything clear of 			it. This frame will need to be strong enough to support the weight of the cargo and motors, and also withstand the torque 			stress on the motors.
-
-		Decision made to go with 25mm steel - we've got a request in for an order of 12m of this, and hopefully an opporunity to go 			down there work on it
+		THe vehicle's main chassis is built from 25mm square-section steel tube. This stuff is reasonably expensive from DIY shops but
+		we obtained a reasonable quantity for free as they were considered offcuts by the original owners.
 
 	Drive motors
 		
-		Currently the design calls for 2x electric motors with chain drives to the rear wheels. We would steer by reversing one motor 			and spinning on the rear axle, or by varying the speed while travelling forward. The front wheels will be castors and simply 			spin and rotate freely.
-		Looking like these will cost us £60 if we go with Razor e300 electric scooter motors. 
+		After disappointing experimentation with razor e300 electric scooter motors, the drive system was changed for twin electric
+		wheelchair motors. These motors are pre geared, giving the vehicle much more torque, while operating at lower currents and
+		prolonging battery life.
 
 	Motor controller
 
-		Currently the thinking is that we will use a self built 2 motor H bridge - H bridges have the advantages of eing able to 			drive the motor in both directions, freewheel, or brake the motor if necessary.
+		INitially we were going to build an H-Bridge, but after some costing up we're now using a Sabretooth 2x25 Motor controller.
 
 	Mower Base
 	
-		Do we leave rotor blade intact?
+		WHile the basis for the original project, it's looking more and more like we won't use a lawnmower at all, however see below.
 	
 	Alternator
 	
@@ -27,19 +27,14 @@ Min requirements:
 
 Features and ideas
 
-Hardware:
-
-Due to the complexity of the motor driver, it is likely that a PCB will be necessary to prevent insanity. Although this does increase the cost, I don't beleive there is any really viable way around it - the motor drivers are surface mount ICs, and they have complex signal paths. 
-Currently the plan is to have a low current PCB, and to solder wires onto the lower section following the traces for heavier current sections. Any ideas on this that are brighter than mine would be welcome.
-
-While we're at it, we should get any aditional ideas forward onto this PCB before it gets produced, even if they're only afterthoughts - the board will cost the same no matter how much we cram onto it, might aswell make it worth while, and unused components can be easily shorted out.
 
 Modules!
-	Mule: A simple wheelbarrow like attachment mounted on top of the main deck for transporting tools, rubbish, camping gear, water etc.
+	Mule: A simple wheelbarrow like attachment mounted on top of the main deck for transporting tools, rubbish, camping gear, water etc. 
+	Research into adding a powered dumper/tipper system underway.
 
 	Umbrella: By adding a semi-permanent upright tube, a parasol/pub umbrella can be added to act as a mobile shelter from the rain or 		sun.
 
-	Jenny (The generator): Adding an inverter will allow us to power 230v stuff on the move, and combined with the alternators will 	effectively turn the rig into a mobile generator.
+	Jenny (The generator): Adding an inverter will allow us to power 230v stuff on the move, and combined with the alternators will 	 effectively turn the rig into a mobile generator.
 
 	Winston (The server): A most likely RPi based server would allow easy access and control of the various modules and on board systems. 		In future this could include a mobile media server, and be engineered to work in tandem with the other computer based modules and PA.
 
@@ -67,7 +62,7 @@ Safety cutout relay
 Emergency stop
 	A little costly, but worth doing? A simple big red button on the back of the vehicle, just in case. - Done, ESTOP cuts power to main solenoid and processors, killing the machine instantly.
 
-Control: A web GUI might serve as a simple way to turn on and off various lights and features?
+Control: A web GUI is in the experimental stages to allow us to control the secondary functions of the rig via a laptop/smartphone.
 
 
 
