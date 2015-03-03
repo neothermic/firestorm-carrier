@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Firestorm Carrier Control</title>
+
+    <!-- Bootstrap -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap-slider.min.css" rel="stylesheet">
+    <style>
+      .row {
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="jquery.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="bootstrap-slider.min.js"></script>
+    <!--<script src="https://raw.githubusercontent.com/gfxmonk/repr.js/master/repr.js"></script>-->
+    <script>
+//////////
+// Battery level
+function updateBatteryLevel() {
+  $.get("battery", function(data) {
+    $("#batteryLevel").html(data);
+    window.setTimeout(updateBatteryLevel, 10000);
+  });
+}
+
+updateBatteryLevel();
+
+////////
+// Utilities
+
+function updateUtility(num) {
+  $.get("utility/" + num, function(data) {
+    updateUtilityUI(num, data);
+    window.setTimeout(function() {updateUtility(num)}, 10000);
+  });
+}
+
+function updateUtilityUI(num, data) {
+  if (data === true || data == "True") {
+    $("#u" + num + " .on").addClass("btn-success active").removeClass("btn-default")
+    $("#u" + num + " .off").addClass("btn-default").removeClass("btn-danger active")
+  } else {
+    $("#u" + num + " .on").addClass("btn-default").removeClass("btn-success active")
+    $("#u" + num + " .off").addClass("btn-danger active").removeClass("btn-default")
+  }
+}
+
+function preUpdateUtilityUI(num) {
+  $("#u" + num + " .on").addClass("btn-default").removeClass("btn-success active")
+  $("#u" + num + " .off").addClass("btn-default").removeClass("btn-danger active")
+}
+
+updateUtility(1);
+updateUtility(2);
+updateUtility(3);
+
+function changeUtility(num) {
+  oldState = $("#u" + num + " .on").hasClass("active");
+  preUpdateUtilityUI(num)
+
+  if (oldState) {
+    targetURL = "utility/" + num + "/off"
+  }
+  else {
+    targetURL = "utility/" + num + "/on"
+  }
+
+  $.get(targetURL)
+    .fail(function(data) {
+      updateUtilityUI(num, oldState);
+    })
+    .done(function(data) {
+      updateUtilityUI(num, !oldState);
+    });
+}
+
+///////////
+// Stop buttons
+
+function allStop() {
+  //Not much point in doing anything with the response as we are about to be turned off.
+  $.get("allStop", function(data) {})
+}
+
+function driveStop() {
+  document.getElementById("drive-stop-btn").disabled=true;
+
+  $.get("driveStop")
+    .fail(function(data) {
+      //re-enable if the call failed.
+      document.getElementById("drive-stop-btn").disabled=false;
+    });
+}
+
+///////////
+// Drive scale slider
+
+function changeDriveScale(num) {
+  if (num == 10) {
+    strValue = "F";
+  } else {
+    strValue = "" + num;
+  }
+  $.get("driveScale/set/" + strValue)
+    .always(function(data) {
+      updateDriveScaleUI(strValue);
+    });
+}
+
+function updateDriveScaleUI(strValue){
+  if (strValue == "F") {
+    num = 10
+  } else {
+    num = parseInt(strValue)
+  }
+
+  $("#driveScale").slider().slider('setValue', num, false)
+
+  if (num > 0) {
+    document.getElementById("drive-stop-btn").disabled=false;
+  } else {
+    document.getElementById("drive-stop-btn").disabled=true;
+  }
+}
+
+function updateDriveScale() {
+  $.get("driveScale", function(data) {
+    updateDriveScaleUI(data);
+    window.setTimeout(updateDriveScale, 10000);
+  });
+}
+
+updateDriveScale()
+
+$(document).ready(function() {
+  $("#driveScale").slider({
+    reversed : true,
+    formatter: function(value) {
+      if (value == 0) { return "STOP"; }
+      return value;
+    },
+    tooltip: 'always'
+  });
+
+  $("#driveScale").on("slideStop", function(slideEvt) {
+    if (typeof slideEvt.value === "undefined") {
+      val = 0;
+    } else {
+      val = slideEvt.value;
+    }
+    changeDriveScale(val);
+  });
+});
+
+///////////
+    </script>
+
+    <h1 style="margin-left:15px">FireStorm Carrier Command</h1>
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-sm-4 col-md-2 col-lg-1 clearfix">
+          <button type="button" id="all-stop-btn" data-loading-text="Stopping..." class="pull-right btn btn-danger" onClick="allStop();">Stop All</button>
+        </div>
+        <div class="col-xs-6">
+          <button type="button" id="drive-stop-btn" data-loading-text="Stopping..." class="btn btn-warning" onClick="driveStop();">Stop Drive</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-3 text-center">
+          <h4>Battery Level</h4>
+          <div id="batteryLevel">0.00</div>
+        </div>
+        <div class="col-sm-3 text-center">
+          <h4>Inverter Status</h4>
+          <div id="u1" class="btn-group btn-toggle" onClick="changeUtility(1);"> 
+            <button class="on btn btn-xs btn-default">ON</button>
+            <button class="off btn btn-xs btn-danger active">OFF</button>
+          </div>
+        </div>
+        <div class="col-sm-3 text-center">
+          <h4>Utility 2 Status</h4>
+          <div id="u2" class="btn-group btn-toggle" onClick="changeUtility(2);"> 
+            <button class="on btn btn-xs btn-default">ON</button>
+            <button class="off btn btn-xs btn-danger active">OFF</button>
+          </div>
+        </div>
+        <div class="col-sm-3 text-center">
+          <h4>Utility 3 Status</h4>
+          <div id="u3" class="btn-group btn-toggle" onClick="changeUtility(3);"> 
+            <button class="on btn btn-xs btn-default">ON</button>
+            <button class="off btn btn-xs btn-danger active">OFF</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-3 text-center">
+          <h4>Drive Scaling</h4>
+          <input id="driveScale" type="text" data-slider-min="0" data-slider-max="10" data-slider-step="1" data-slider-value="0" data-slider-orientation="vertical"/>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
