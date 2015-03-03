@@ -85,6 +85,8 @@ unsigned long yDuration;
 unsigned long throttleDuration = 1000;
 unsigned long switchDuration = 1000;
 
+unsigned long switch1State = 0;
+
 unsigned long utility1State = 0;
 unsigned long utility2State = 0;
 unsigned long utility3State = 0;
@@ -185,8 +187,10 @@ void loop()
 
   if (switchDuration > 1200){
     //switch "on" condition
+    switch1State = 1;
   } else {
     //switch "off" condition
+    switch1State = 0;
   }
 
   if (printDebug) {
@@ -257,7 +261,18 @@ void batteryCheck() {
   Serial.println("");
 }
 
-//handlers for utilities, accepts 3 commands: 1 turns the utility on. 0 turns it off. 9 requests serial output of the utility's current state
+//handlers for utilities and switches, accepts 3 commands: 1 turns the utility on. 0 turns it off. ? requests serial output of the utility's current state
+void switch1(char command) {
+  if (command == '0') {
+//state of the switch cannot be changed by software
+  } else if (command == '1') {
+//state of the switch cannot be changed by software
+  } else if (command == '?') {
+    Serial.print("C 1 ");
+    Serial.print(switch1State); //state of the switch can however be reported
+    Serial.println("");
+  }
+}
 void utility1(char command) {
   if (command == '0') {
     digitalWrite(utility1Pin, HIGH);
@@ -392,6 +407,12 @@ void checkSerial() {
             case 's':
               driveScale(serialBuffer[4]);
               break;
+          }
+        case 'c':
+          switch (serialBuffer[2]) {
+            case '1':
+              switch1(serialBuffer[4]);
+              break; 
           }
           break;
       }
