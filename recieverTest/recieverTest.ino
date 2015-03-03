@@ -110,6 +110,9 @@ void setup()
   pinMode(utility1Pin, OUTPUT);
   pinMode(utility2Pin, OUTPUT);
   pinMode(utility3Pin, OUTPUT);
+  digitalWrite(utility1Pin, LOW);
+  digitalWrite(utility2Pin, LOW);
+  digitalWrite(utility3Pin, LOW);
   digitalWrite(selfPowerPin, LOW);
   digitalWrite(powerPin, HIGH);
   delay(1000);
