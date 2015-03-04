@@ -1,12 +1,6 @@
 
 Decide on paint job
 
-Tweak numbers/autocalibrate?
-
 Mode switching code
 
-Stop motors shifting under load
 
-Prevent twitching when stationary - Partially obtained using a comination of the failsafe and deadzone codes.
-
-Look into safe shutdown when all stop command is issued
