@@ -188,9 +188,13 @@ void loop()
   if (switchDuration > 1200){
     //switch "on" condition
     switch1State = 1;
+    utility1State = 1;
+    digitalWrite(utility1Pin, LOW);
   } else {
     //switch "off" condition
     switch1State = 0;
+    utility1State= 0;
+    digitalWrite(utility1Pin, HIGH);
   }
 
   if (printDebug) {

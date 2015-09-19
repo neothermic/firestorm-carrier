@@ -3,4 +3,6 @@ Decide on paint job
 
 Mode switching code
 
+switch activating lights - currently the switch state is checked on every loop, so the software can never change the state. Change so that the change in state instead is checked for, so that either the software or the hardware can take control by changing the state.
+
 
